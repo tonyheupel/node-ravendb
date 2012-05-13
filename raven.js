@@ -15,7 +15,7 @@ Database.prototype.getDocsUrl = function() { return this.getUrl() + '/docs' }
 Database.prototype.getDocUrl = function(id) { return this.getDocsUrl() + '/' + id }
 Database.prototype.getIndexesUrl = function() { return this.getUrl() + '/indexes' }
 Database.prototype.getIndexUrl = function(index) { return this.getIndexesUrl() + '/' + index }
-Database.prototype.getTermsUrl = function(index, field) { 
+Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
@@ -45,16 +45,16 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
     delete doc.id // Don't add this as it's own property to the document...
   }
 
-	op({ 
+	op({
     headers: {'Raven-Entity-Name': collection}, // TODO: skip this if no collection string passed in?
                                                 // TODO: Add 'www-authenticate': 'NTLM' back into headers?
-    uri: url,    
-    json: doc 
+    uri: url,
+    json: doc
     }, function(error, response, body) {
 
-	  if (!error && response.statusCode == 201) { // 201 - Created
-	    if (cb) cb(null, body)
-	  }
+    if (!error && response.statusCode == 201) { // 201 - Created
+      if (cb) cb(null, body)
+    }
     else {
       if (cb) {
         if (error) cb(error)
@@ -95,13 +95,13 @@ Database.prototype.find = function(doc, cb) {
 
 Database.prototype.getDocsInCollection = function(collection, cb) {
   this.queryRavenDocumentsByEntityName(collection, 0, 100, function(error, results) {
-    cb(error, results.Results)
+    cb(error, results && results.Results ? results.Results : null)
   })
 }
 
 Database.prototype.getDocumentCount = function(collection, cb) {
   this.queryRavenDocumentsByEntityName(collection, 0, 0, function(error, results) {
-    cb(error, results.TotalResults)
+    cb(error, results && results.TotalResults ? results.TotalResults : null)
   })
 }
 
@@ -133,13 +133,13 @@ Database.prototype.apiGetCall = function(url, cb) {
     else {
       if (cb) {
         if (error) cb(error)
-        else cb(new Error('Error: ' + response.statusCode + ' - ' + body))
+        else cb(new Error(response.statusCode + ' - ' + body))
       }
     }
   })
 }
 
-module.exports = { 
+module.exports = {
   Database: Database,
   use: function(url) {
     return new Datastore(url)
