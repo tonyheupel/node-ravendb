@@ -10,7 +10,7 @@
   "scripts": {
     "test": "vows --spec --isolate"
   },
-  "main": "./raven",
+  "main": "./ravendb",
   "repository": {
     "type": "git",
     "url": "https://github.com/tchype/node-ravendb.git"
