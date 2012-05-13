@@ -1,5 +1,5 @@
-raven-shell
-===========
+ravendb
+=======
 
 A node library for RavenDB
 
