@@ -1,5 +1,5 @@
 {
-  "name": "node-ravendb",
+  "name": "ravendb",
   "preferGlobal": "false",
   "version": "0.0.1",
   "author": "Tony Heupel <tonyheupel@gmail.com>",
