@@ -1,0 +1,35 @@
+{
+  "name": "node-ravendb",
+  "preferGlobal": "false",
+  "version": "0.0.1",
+  "author": "Tony Heupel <tonyheupel@gmail.com>",
+  "description": "A node library for accessing RavenDB",
+  "contributors": [ 
+    {
+    } 
+  ],
+  "scripts": {
+    "test": "vows --spec --isolate"
+  },
+  "main": "./raven",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tchype/node-ravendb.git"
+  },
+  "keywords": [
+    "ravendb"  
+	],
+  "dependencies" : {
+	"request": "2.1.x"
+  },
+  "noAnalyze": true,
+  "devDependencies": {
+    "vows"    :  "0.5.x"
+  },
+  "bundleDependencies": [
+  ],
+  "license": "MIT",
+  "engine": {
+    "node": ">=0.6"
+  }
+}
