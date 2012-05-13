@@ -18,6 +18,7 @@ Database.prototype.getIndexUrl = function(index) { return this.getIndexesUrl() +
 Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
+Database.prototype.getStatsUrl = function() { return this.getUrl() + '/stats' }
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
 Database.DYNAMIC_INDEX = 'dynamic'
 
@@ -105,6 +106,10 @@ Database.prototype.getDocumentCount = function(collection, cb) {
   })
 }
 
+
+Database.prototype.getStats = function(cb) {
+  this.apiGetCall(this.getStatsUrl(), cb)
+}
 
 Database.prototype.dynamicQuery = function(doc, start, count, cb) {
   var url = this.getIndexUrl(Database.DYNAMIC_INDEX) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
