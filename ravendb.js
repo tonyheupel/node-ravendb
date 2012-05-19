@@ -129,25 +129,60 @@ Database.prototype.getStats = function(cb) {
   this.apiGetCall(this.getStatsUrl(), cb)
 }
 
+
+
+// Indexes
+
+
 Database.prototype.dynamicQuery = function(doc, start, count, cb) {
-  var url = this.getIndexUrl(Database.DYNAMIC_INDEX) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
-  for (prop in doc) {
-    url += prop + ':' + doc[prop] + '+'
-  }
-  this.apiGetCall(url, cb)
+  this.queryByIndex(Database.DYNAMIC_INDEX, doc, start, count, cb)
 }
 
+
 Database.prototype.queryRavenDocumentsByEntityName = function(name, start, count, cb) {
+  this.queryByIndex(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, {Tag:name}, start, count, cb)
+}
+
+
+Database.prototype.queryByIndex = function(index, query, start, count, cb) {
   if (!start) start = 0
   if (!count) count = 0
   // if start and count aren't passed in, you'll just get the TotalResults property
   // and no results
 
-  var url = this.getIndexUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX) + '?start=' + start + '&pageSize=' + count + '&aggregation=None'
-  if (name && name.length > 0) url += '&query=Tag:' + name
+  var url = this.getIndexUrl(index) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
+  for (field in query) {  // Should only be one field right now
+    url += field + ':' + query[field] + '+'
+  }
+  
   this.apiGetCall(url, cb)
 }
 
+Database.prototype.createIndex = function(name, map, reduce, cb) {
+  // reduce is optional, so see if it is a callback function
+  if (typeof reduce === 'function') {
+    cb = reduce
+    reduce = null
+  }
+
+  var url = this.getIndexUrl(name)
+  var index = { Map : map }
+  if (reduce) index['Reduce'] = reduce
+
+  request.put({ uri: url, body: JSON.stringify(index) }, function(error, response, body) {
+    if (!error && response.statusCode == 201) {
+      if (cb) cb(null, body && body.length > 0 ? JSON.parse(body) : null)
+    } else {
+      if (cb) {
+        if (error) cb(error)
+        else cb(new Error('Unable to create index: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
+
+// base API get calls
 Database.prototype.apiGetCall = function(url, cb) {
   request(url, function(error, response, body) {
     if (!error && response.statusCode == 200) {
