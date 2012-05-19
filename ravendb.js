@@ -1,8 +1,8 @@
 var request = require("request");
 
-var Datastore = function(url, name) {
+var Datastore = function(url, databaseName) {
   this.url = url
-  this.defaultDb = new Database(this, name || 'Default')
+  this.defaultDb = new Database(this, databaseName || 'Default')
 }
 
 var Database = function(datastore, name) {
@@ -240,9 +240,11 @@ Database.prototype.apiGetCall = function(url, cb) {
   })
 }
 
+
+// Exports
 module.exports = {
   Database: Database,
-  use: function(url) {
-    return new Datastore(url)
+  use: function(url, databaseName) {
+    return new Datastore(url, databaseName)
   }
 }
