@@ -179,8 +179,12 @@ Database.prototype.queryByIndex = function(index, query, start, count, cb) {
   // and no results
 
   var url = this.getIndexUrl(index) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
-  for (field in query) {  // Should only be one field right now
-    url += field + ':' + query[field] + '+'
+  
+  var afterFirst = false  // Track whether we are after the first field in the query or not
+  for (field in query) {
+    if (afterFirst) url += '+'
+    url += field + ':' + query[field]
+    afterFirst = true
   }
   
   this.apiGetCall(url, cb)
