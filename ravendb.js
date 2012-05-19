@@ -105,8 +105,17 @@ Database.prototype.deleteDocument = function(id, cb) {
   })
 }
 
-Database.prototype.find = function(doc, cb) {
-  this.dynamicQuery(doc, 0, 100, function(error, results) {
+Database.prototype.find = function(doc, start, count, cb) {
+  if (typeof start === 'function') {
+    cb = start
+    start = null
+    count = null
+  } else if (typeof count === 'function') {
+    cb = count
+    count = null
+  }
+
+  this.dynamicQuery(doc, start, count, function(error, results) {
     var matches = results && results.Results ? results.Results : null
     cb(error, matches)
   })
@@ -121,7 +130,7 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
     cb = count
     count = null
   }
-  
+
   this.queryRavenDocumentsByEntityName(collection, start, count, function(error, results) {
     cb(error, results && results.Results ? results.Results : null)
   })
