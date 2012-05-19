@@ -112,13 +112,23 @@ Database.prototype.find = function(doc, cb) {
   })
 }
 
-Database.prototype.getDocsInCollection = function(collection, cb) {
-  this.queryRavenDocumentsByEntityName(collection, 0, 100, function(error, results) {
+Database.prototype.getDocsInCollection = function(collection, start, count, cb) {
+  if (typeof start === 'function') {
+    cb = start
+    start = null
+    count = null
+  } else if (typeof count === 'function') {
+    cb = count
+    count = null
+  }
+  
+  this.queryRavenDocumentsByEntityName(collection, start, count, function(error, results) {
     cb(error, results && results.Results ? results.Results : null)
   })
 }
 
 Database.prototype.getDocumentCount = function(collection, cb) {
+  // Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
   this.queryRavenDocumentsByEntityName(collection, 0, 0, function(error, results) {
     cb(error, results && results.TotalResults ? results.TotalResults : null)
   })
@@ -145,8 +155,17 @@ Database.prototype.queryRavenDocumentsByEntityName = function(name, start, count
 
 
 Database.prototype.queryByIndex = function(index, query, start, count, cb) {
+  if (typeof start === 'function') {
+    cb = start
+    start = null
+    count = null
+  } else if (typeof count === 'function') {
+    cb = count
+    count = null
+  }
+
   if (!start) start = 0
-  if (!count) count = 0
+  if (!count) count = 25  // Arbitrary count...
   // if start and count aren't passed in, you'll just get the TotalResults property
   // and no results
 
