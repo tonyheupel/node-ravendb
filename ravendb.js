@@ -1,8 +1,8 @@
 var request = require("request");
 
-var Datastore = function(url) {
+var Datastore = function(url, name) {
   this.url = url
-  this.defaultDb = new Database(this)
+  this.defaultDb = new Database(this, name || 'Default')
 }
 
 var Database = function(datastore, name) {
