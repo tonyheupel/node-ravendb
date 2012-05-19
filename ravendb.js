@@ -210,6 +210,21 @@ Database.prototype.createIndex = function(name, map, reduce, cb) {
 }
 
 
+Database.prototype.deleteIndex = function(index, cb) {
+  var url = this.getIndexUrl(index)
+
+  request.del(url, function(error, response, body) {
+    if (!error && response.statusCode == 204) {  // 204 - No content
+      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+    } else {
+      if (cb) {
+        if (error) cb(error)
+          else cb(new Error('Unable to delete index: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
 // base API get calls
 Database.prototype.apiGetCall = function(url, cb) {
   request(url, function(error, response, body) {
