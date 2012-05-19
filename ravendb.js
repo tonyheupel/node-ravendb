@@ -159,7 +159,7 @@ Database.prototype.dynamicQuery = function(doc, start, count, cb) {
 
 
 Database.prototype.queryRavenDocumentsByEntityName = function(name, start, count, cb) {
-  this.queryByIndex(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, {Tag:name}, start, count, cb)
+  this.queryByIndex(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, name ? { Tag:name } : null, start, count, cb)
 }
 
 
@@ -183,7 +183,9 @@ Database.prototype.queryByIndex = function(index, query, start, count, cb) {
   var afterFirst = false  // Track whether we are after the first field in the query or not
   for (field in query) {
     if (afterFirst) url += '+'
+    
     url += field + ':' + query[field]
+
     afterFirst = true
   }
   
