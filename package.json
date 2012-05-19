@@ -7,9 +7,6 @@
     {
     } 
   ],
-  "scripts": {
-    "test": "vows --spec --isolate"
-  },
   "main": "./ravendb",
   "repository": {
     "type": "git",
@@ -23,7 +20,6 @@
   },
   "noAnalyze": true,
   "devDependencies": {
-    "vows"    :  "0.5.x"
   },
   "bundleDependencies": [
   ],
