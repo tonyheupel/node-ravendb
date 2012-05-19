@@ -18,6 +18,7 @@ Database.prototype.getIndexUrl = function(index) { return this.getIndexesUrl() +
 Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
+Database.prototype.getQueriesUrl = function() { return this.getUrl() + '/queries' }
 Database.prototype.getStatsUrl = function() { return this.getUrl() + '/stats' }
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
 Database.DYNAMIC_INDEX = 'dynamic'
@@ -69,6 +70,23 @@ Database.prototype.getDocument = function(id, cb) {
   var url = this.getDocUrl(id)
   this.apiGetCall(url, cb)
 }
+
+
+Database.prototype.getDocuments = function(ids, cb) {
+  var url = this.getQueriesUrl()
+  var query = JSON.stringify(ids)
+  request.post({ uri: url, body: query}, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+    } else {
+      if (cb) { 
+        if (error) cb(error)
+        else cb(new Error('Unable to find documents: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
 
 // PATCH - Update
 
