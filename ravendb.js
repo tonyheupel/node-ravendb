@@ -1,4 +1,4 @@
-var request = require("request");
+var request = require('request')
 
 var Datastore = function(url, databaseName) {
   this.url = url
@@ -18,7 +18,13 @@ Database.prototype.getIndexUrl = function(index) { return this.getIndexesUrl() +
 Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
+
 Database.prototype.getQueriesUrl = function() { return this.getUrl() + '/queries' }
+Database.prototype.getBulkDocsUrl = function() { return this.getUrl() + '/bulk_docs' }
+Database.prototype.getBulkDocsIndexUrl = function (index, query) { 
+  return this.getBulkDocsUrl() + '/' + index + '?query=' + this.luceneQueryArgs(query) 
+}
+
 Database.prototype.getStatsUrl = function() { return this.getUrl() + '/stats' }
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
 Database.DYNAMIC_INDEX = 'dynamic'
@@ -92,7 +98,7 @@ Database.prototype.getDocuments = function(ids, cb) {
 
 Database.prototype.deleteDocument = function(id, cb) {
   var url = this.getDocUrl(id)
-
+  // TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
   request.del(url, function(error, response, body) {
     if (!error && response.statusCode == 204) {  // 204 - No content
       if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
@@ -104,6 +110,28 @@ Database.prototype.deleteDocument = function(id, cb) {
     }
   })
 }
+
+
+// Set-based updates
+
+Database.prototype.deleteDocuments = function(index, query, cb) {
+  var url = this.getBulkDocsIndexUrl(index, query)
+
+  request.del(url, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+    } else {
+      if (cb) {
+        if (error) cb(error)
+          else cb(new Error('Unable to delete documents: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
+
+
+// Search
 
 Database.prototype.find = function(doc, start, count, cb) {
   if (typeof start === 'function') {
@@ -179,16 +207,8 @@ Database.prototype.queryByIndex = function(index, query, start, count, cb) {
   // and no results
 
   var url = this.getIndexUrl(index) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
-  
-  var afterFirst = false  // Track whether we are after the first field in the query or not
-  for (field in query) {
-    if (afterFirst) url += '+'
-    
-    url += field + ':' + query[field]
+  url += this.luceneQueryArgs(query)
 
-    afterFirst = true
-  }
-  
   this.apiGetCall(url, cb)
 }
 
@@ -230,6 +250,24 @@ Database.prototype.deleteIndex = function(index, cb) {
     }
   })
 }
+
+
+// helper methods
+Database.prototype.luceneQueryArgs = function(query) {
+  var qs = ''
+    , afterFirst = false
+
+  for (field in query) {
+    if (afterFirst) qs += '+'
+    
+    qs += field + ':' + query[field]
+
+    afterFirst = true
+  }
+
+  return qs
+}
+
 
 // base API get calls
 Database.prototype.apiGetCall = function(url, cb) {
