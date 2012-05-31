@@ -1,6 +1,4 @@
 // database.js
-var request = require('request')
-
 var Database = function(datastore, name) {
   this.datastore = datastore
   this.name = name
@@ -35,9 +33,9 @@ Database.DYNAMIC_INDEX = 'dynamic'
 
 
 Database.prototype.getCollections = function(cb) {
-  request(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, response, body) {
+  this.apiGetCall(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, JSON.parse(body))
+      if (cb) cb(null, JSON.parse(response.body))
     }
     else {
       if (cb) cb(error)
@@ -48,24 +46,21 @@ Database.prototype.getCollections = function(cb) {
 Database.prototype.saveDocument = function(collection, doc, cb) {
   // If not id provided, use POST to allow server-generated id
   // else, use PUT and use id in url
-  var op = request.post
+  var op = this.apiPostCall
     , url = this.getDocsUrl()
 
   if (doc.id) {
-    op = request.put
+    op = this.apiPutCall
     url = this.getDocUrl(doc.id)
     delete doc.id // Don't add this as it's own property to the document...
   }
 
-	op({
-    headers: {'Raven-Entity-Name': collection}, // TODO: skip this if no collection string passed in?
-                                                // TODO: Add 'www-authenticate': 'NTLM' back into headers?
-    uri: url,
-    json: doc
-    }, function(error, response, body) {
+	op(url, doc, {'Raven-Entity-Name': collection}, // TODO: skip this if no collection string passed in?
+                                                  // TODO: Add 'www-authenticate': 'NTLM' back into headers?
+     function(error, response) {
 
     if (!error && response.statusCode == 201) { // 201 - Created
-      if (cb) cb(null, body)
+      if (cb) cb(null, response.body)
     }
     else {
       if (cb) {
@@ -84,10 +79,10 @@ Database.prototype.getDocument = function(id, cb) {
 
 Database.prototype.getDocuments = function(ids, cb) {
   var url = this.getQueriesUrl()
-  var query = JSON.stringify(ids)
-  request.post({ uri: url, body: query}, function(error, response, body) {
+
+  this.apiPostCall(url, ids, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(respnose.body) : null)
     } else {
       if (cb) { 
         if (error) cb(error)
@@ -103,9 +98,9 @@ Database.prototype.getDocuments = function(ids, cb) {
 Database.prototype.deleteDocument = function(id, cb) {
   var url = this.getDocUrl(id)
   // TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
-  request.del(url, function(error, response, body) {
+  this.apiDeleteCall(url, function(error, response) {
     if (!error && response.statusCode == 204) {  // 204 - No content
-      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
     } else {
       if (cb) {
         if (error) cb(error)
@@ -121,9 +116,9 @@ Database.prototype.deleteDocument = function(id, cb) {
 Database.prototype.deleteDocuments = function(index, query, cb) {
   var url = this.getBulkDocsIndexUrl(index, query)
 
-  request.del(url, function(error, response, body) {
+  this.apiDeleteCall(url, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
     } else {
       if (cb) {
         if (error) cb(error)
@@ -227,9 +222,9 @@ Database.prototype.createIndex = function(name, map, reduce, cb) {
   var index = { Map : map }
   if (reduce) index['Reduce'] = reduce
 
-  request.put({ uri: url, body: JSON.stringify(index) }, function(error, response, body) {
+  this.apiPutCall(url, index, function(error, response) {
     if (!error && response.statusCode == 201) {
-      if (cb) cb(null, body && body.length > 0 ? JSON.parse(body) : null)
+      if (cb) cb(null, response.body && response.body.length > 0 ? JSON.parse(response.body) : null)
     } else {
       if (cb) {
         if (error) cb(error)
@@ -243,9 +238,9 @@ Database.prototype.createIndex = function(name, map, reduce, cb) {
 Database.prototype.deleteIndex = function(index, cb) {
   var url = this.getIndexUrl(index)
 
-  request.del(url, function(error, response, body) {
+  this.apiDeleteCall(url, function(error, response) {
     if (!error && response.statusCode == 204) {  // 204 - No content
-      if (cb) cb(null, (body && body.length > 0) ? JSON.parse(body) : null)
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
     } else {
       if (cb) {
         if (error) cb(error)
@@ -274,18 +269,98 @@ Database.prototype.luceneQueryArgs = function(query) {
 
 
 // base API get calls
-Database.prototype.apiGetCall = function(url, cb) {
-  request(url, function(error, response, body) {
+Database.prototype.apiGetCall = function(url, headers, cb) {
+  if (typeof headers == 'function') {
+    cb = headers
+    headers = null
+  }
+  
+  this.apiCall('get', url, headers, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, JSON.parse(body))
+      if (cb) cb(null, JSON.parse(response.body))
     }
     else {
       if (cb) {
         if (error) cb(error)
-        else cb(new Error(response.statusCode + ' - ' + body))
+        else cb(new Error(response.statusCode + ' - ' + response.body))
       }
     }
   })
 }
+
+Database.prototype.apiPutCall = function(url, body, headers, cb) {
+  if (typeof headers == 'function') {
+    cb = headers
+    headers = null
+  }
+  
+	this.apiCall('put', url, body, headers, cb) // Maybe check for 201 - CREATED here?
+}
+
+
+Database.prototype.apiPostCall = function(url, body, headers, cb) {
+  if (typeof headers == 'function') {
+    cb = headers
+    headers = null
+  }
+  
+	this.apiCall('post', url, body, headers, cb) // Maybe check for UPDATED here?
+}
+
+
+Database.prototype.apiPatchCall = function(url, body, headers, cb) {
+  if (typeof headers == 'function') {
+    cb = headers
+    headers = null
+  }
+  
+	this.apiCall('patch', url, body, headers, cb) // Maybe check for success here?
+}
+
+
+Database.prototype.apiDeleteCall = function(url, body, headers, cb) {
+  if (typeof body == 'function') {
+    cb = body
+    body = null
+    headers = null
+  } else if (typeof headers == 'function') {
+    cb = headers
+    headers = null
+  }
+  
+	this.apiCall('delete', url, body, headers, cb) // Maybe check for DELETED here?
+}
+
+
+var request = require('request')
+
+Database.prototype.apiCall = function(verb, url, body, headers, cb) {
+  var verb = verb.toLowerCase()
+  var op
+  
+  switch(verb) {
+    case 'get':
+      op = request.get
+      break
+    case 'put':          // create new when client can't predict id
+      op = request.put
+      break
+    case 'post':         // override definition of resource with id 
+      op = request.post
+      break
+    case 'patch':        // update part of an existing resource
+      // op = request.patch
+      throw new Error('request module does not yet support patch verb')
+      break
+    case 'delete':       // delete resource
+      op = request.del
+    default:
+      throw new Error('No operation matched the verb "' + verb +'"')
+      break    
+  }
+  
+  op({ uri: url, json: body, headers: headers}, cb)
+}
+
 
 module.exports = Database
