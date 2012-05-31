@@ -20,8 +20,9 @@ Usage
 ```js
 var ravendb = require('ravendb')
 
-var datastore = ravendb.use('http://localhost:8080')
-var db = datastore.defaultDb
+// Use http://localhost:8080 and Default database if no args passed in
+// ravendb([datastoreUrl, databaseName])
+var db = ravendb()
 
 db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(err, result) {
   if (err) console.error(err)
@@ -31,5 +32,11 @@ db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupe
 db.getDocument('users/tony', function(err, result) {
   if (err) console.error(err)
   else console.log(result)
+})
+
+var otherdb = ravendb('http://some-remote-url.com', 'OtherDatabase')
+otherdb.getDocument('things/foobar', function(err, result) {
+	if (err) console.error(err)
+	else console.log(result)
 })
 ```
