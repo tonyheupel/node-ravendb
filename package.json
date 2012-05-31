@@ -8,6 +8,9 @@
     } 
   ],
   "main": "./ravendb",
+  "scripts": {
+    "test": "vows tests --spec"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tchype/node-ravendb.git"
@@ -20,6 +23,7 @@
   },
   "noAnalyze": true,
   "devDependencies": {
+    "vows": ">=0.6.2"
   },
   "bundleDependencies": [
   ],
