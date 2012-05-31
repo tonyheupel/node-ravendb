@@ -12,8 +12,17 @@ var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
                       }
 
 // Intercept database api calls
-localDatastore.defaultDatabase.constructor.prototype.apiGetCall = function(url, cb) {
-  cb(null, { 'url': url })
+localDatastore.defaultDatabase.constructor.prototype.apiCall = function(verb, url, body, headers, cb) {
+  if (typeof body === 'function') {
+    cb = body
+    body = null
+    headers = null
+  } else if (typeof headers === 'function') {
+    cb = headers
+    headers = null
+  }
+
+  cb(null, { statusCode: 200, body: JSON.stringify({ verb: verb, url: url, body: body, headers: headers }) })
 }
 
  
@@ -22,6 +31,7 @@ vows.describe('Document Operations').addBatch({
 		topic: localDatastore.defaultDatabase,
 		'should get a document using docs resource with the doc id': function(db) {
 			db.getDocument('users/tony', function(err, doc) {
+        assert.equal('get', doc.verb, 'getDocument should use HTTP GET')
         assert.ok(/\/docs\/users\/tony/.test(doc.url), 'Url should contain "/docs/{id}"')
 		  })
     }

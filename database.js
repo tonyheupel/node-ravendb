@@ -275,7 +275,7 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
     headers = null
   }
   
-  this.apiCall('get', url, headers, function(error, response) {
+  this.apiCall('get', url, null, headers, function(error, response) {
     if (!error && response.statusCode == 200) {
       if (cb) cb(null, JSON.parse(response.body))
     }
