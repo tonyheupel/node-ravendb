@@ -4,30 +4,41 @@ var vows = require('vows')
 
 
 var ravendb = require('../ravendb')
-var defaultDatabase = ravendb()
-var foobarDatabase = ravendb(null, 'foobar')
+var localDatastore = {   defaultDatabase:  ravendb()
+                       , foobarDatabase: ravendb(null, 'foobar') 
+                     }
+var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
+                        , foobarDatabase: ravendb('http://example.com', 'foobar')
+                      }
 
 // Intercept database api calls
-defaultDatabase.constructor.prototype.apiGetCall = function(url, cb) {
+localDatastore.defaultDatabase.constructor.prototype.apiGetCall = function(url, cb) {
   cb(null, { 'url': url })
 }
 
  
 vows.describe('Document Operations').addBatch({
-	'An instance of a default Database object': {
-		topic: defaultDatabase,
+	'An instance of a Database object': {
+		topic: localDatastore.defaultDatabase,
 		'should get a document using docs resource with the doc id': function(db) {
 			db.getDocument('users/tony', function(err, doc) {
-        assert.equal('http://localhost:8080/docs/users/tony', doc.url)
+        assert.ok(/\/docs\/users\/tony/.test(doc.url), 'Url should contain "/docs/{id}"')
 		  })
     }
   },
   'An instance of a non-default Database object': {
-    topic: foobarDatabase,
-    'should get a document using databases and resource with doc id': function(db) {
-      db.getDocument('users/tony', function(err, doc) {
-        assert.equal('http://localhost:8080/databases/foobar/docs/users/tony', doc.url)
-      })
+    topic: localDatastore.foobarDatabase,
+    'should have a base url that includes the database resource and the database name': function(db) {
+      assert.ok(/\/databases\/foobar/.test(db.getUrl()), 'Database url should contain "/databases/{databasename}"')
+    }
+  },
+  'An instance of a remote Database object': {
+    topic: remoteDatastore,
+    'should have a base url that matches the datastore url for the default database': function(datastore) {
+      assert.equal('http://example.com', datastore.defaultDatabase.getUrl())
+    },
+    'should have a base url that matches the datastore url with the databases resource': function(datastore) {
+      assert.equal('http://example.com/databases/foobar', datastore.foobarDatabase.getUrl())
     }
   }
 }).export(module)
