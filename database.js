@@ -356,6 +356,7 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
       break
     case 'delete':       // delete resource
       op = request.del
+      break
     default:
       throw new Error('No operation matched the verb "' + verb +'"')
       break    
