@@ -55,7 +55,7 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
     delete doc.id // Don't add this as it's own property to the document...
   }
 
-	op(url, doc, {'Raven-Entity-Name': collection}, // TODO: skip this if no collection string passed in?
+	op.call(this, url, doc, {'Raven-Entity-Name': collection}, // TODO: skip this if no collection string passed in?
                                                   // TODO: Add 'www-authenticate': 'NTLM' back into headers?
      function(error, response) {
 
@@ -293,8 +293,10 @@ Database.prototype.apiPutCall = function(url, body, headers, cb) {
     cb = headers
     headers = null
   }
-  
-	this.apiCall('put', url, body, headers, cb) // Maybe check for 201 - CREATED here?
+
+  this.apiCall('put', url, body, headers, function(error, response) {
+    cb(error, response)
+  }) // Maybe check for 201 - CREATED here?
 }
 
 
@@ -359,7 +361,7 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
       break    
   }
   
-  op({ uri: url, json: body, headers: headers}, cb)
+  op.call(request, { uri: url, json: body, headers: headers}, cb)
 }
 
 
