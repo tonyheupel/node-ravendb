@@ -66,7 +66,7 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
      function(error, response) {
 
     if (!error && response.statusCode == 201) { // 201 - Created
-      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
+      if (cb) cb(null, response.body)
     }
     else {
       if (cb) {
@@ -89,7 +89,7 @@ Database.prototype.getDocuments = function(ids, cb) {
 
   this.apiPostCall(url, ids, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(respnose.body) : null)
+      if (cb) cb(null, response.body)
     } else {
       if (cb) { 
         if (error) cb(error)
@@ -107,7 +107,7 @@ Database.prototype.deleteDocument = function(id, cb) {
   // TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
   this.apiDeleteCall(url, function(error, response) {
     if (!error && response.statusCode == 204) {  // 204 - No content
-      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
+      if (cb) cb(null, response.body)
     } else {
       if (cb) {
         if (error) cb(error)

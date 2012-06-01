@@ -19,8 +19,8 @@ var helpers = {
         headers = null
       }
 
-      retObj = returnObject || { statusCode: statusCode, body: JSON.stringify({ verb: verb, url: url, body: body, headers: headers }) }
-      cb(null, retObj)
+      if (!returnObject) returnObject = { statusCode: statusCode, body: { verb: verb, url: url, body: body, headers: headers } }
+      cb(null, returnObject)
     }
   }
 

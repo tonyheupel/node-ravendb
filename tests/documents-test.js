@@ -45,9 +45,11 @@ vows.describe('Document Operations').addBatch({
   'An instance of a Database object': {
     topic: localDatastore.defaultDatabase,
     'should return the Key and E-Tag of the document when successfully saved': function(db) {
-      helpers.mockApiCalls(localDatastore.defaultDatabase, 201)
+      mockResponse = { statusCode: 201, body: { Key: 'users/tony', ETag: '00000000-0000-0900-0000-000000000016'} }
+      helpers.mockApiCalls(localDatastore.defaultDatabase, 201, mockResponse)
+
       db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {
-        // TODO: Fake out a response here.
+        assert.deepEqual(r, mockResponse.body)
       })
     }
   }
