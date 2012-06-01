@@ -29,8 +29,6 @@ vows.describe('Datastore Operations').addBatch({
       helpers.mockApiCalls(ds.defaultDatabase, 204)  // 204 - no content
 
       ds.deleteDatabase('Foobar', function(error, result) {
-        console.log(error)
-        console.log(result)
         assert.equal(result.url, 'http://localhost:8080/docs/Raven/Databases/Foobar')
         assert.equal(result.verb, 'delete')
       })
