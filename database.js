@@ -4,6 +4,7 @@ var Database = function(datastore, name) {
   this.name = name
 }
 
+
 Database.prototype.getUrl = function() { 
   var url = this.datastore.url
 
@@ -13,6 +14,8 @@ Database.prototype.getUrl = function() {
 
   return url
 }
+
+
 Database.prototype.getDocsUrl = function() { return this.getUrl() + '/docs' }
 Database.prototype.getDocUrl = function(id) { return this.getDocsUrl() + '/' + id }
 Database.prototype.getIndexesUrl = function() { return this.getUrl() + '/indexes' }
@@ -21,11 +24,13 @@ Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
 
+
 Database.prototype.getQueriesUrl = function() { return this.getUrl() + '/queries' }
 Database.prototype.getBulkDocsUrl = function() { return this.getUrl() + '/bulk_docs' }
 Database.prototype.getBulkDocsIndexUrl = function (index, query) { 
   return this.getBulkDocsUrl() + '/' + index + '?query=' + this.luceneQueryArgs(query) 
 }
+
 
 Database.prototype.getStatsUrl = function() { return this.getUrl() + '/stats' }
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
@@ -42,6 +47,7 @@ Database.prototype.getCollections = function(cb) {
     }
   })
 }
+
 
 Database.prototype.saveDocument = function(collection, doc, cb) {
   // If not id provided, use POST to allow server-generated id
@@ -60,7 +66,7 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
      function(error, response) {
 
     if (!error && response.statusCode == 201) { // 201 - Created
-      if (cb) cb(null, response.body)
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
     }
     else {
       if (cb) {
@@ -70,6 +76,7 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
     }
 	})
 }
+
 
 Database.prototype.getDocument = function(id, cb) {
   var url = this.getDocUrl(id)
@@ -148,6 +155,7 @@ Database.prototype.find = function(doc, start, count, cb) {
   })
 }
 
+
 Database.prototype.getDocsInCollection = function(collection, start, count, cb) {
   if (typeof start === 'function') {
     cb = start
@@ -162,6 +170,7 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
     cb(error, results && results.Results ? results.Results : null)
   })
 }
+
 
 Database.prototype.getDocumentCount = function(collection, cb) {
   // Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
@@ -210,6 +219,7 @@ Database.prototype.queryByIndex = function(index, query, start, count, cb) {
 
   this.apiGetCall(url, cb)
 }
+
 
 Database.prototype.createIndex = function(name, map, reduce, cb) {
   // reduce is optional, so see if it is a callback function
@@ -277,7 +287,7 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
   
   this.apiCall('get', url, null, headers, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, JSON.parse(response.body))
+      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
     }
     else {
       if (cb) {
@@ -287,6 +297,7 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
     }
   })
 }
+
 
 Database.prototype.apiPutCall = function(url, body, headers, cb) {
   if (typeof headers == 'function') {

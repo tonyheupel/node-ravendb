@@ -1,7 +1,7 @@
 // test-documents.js
 var vows = require('vows')
   , assert = require('assert')
-
+  , helpers = require('./test-helpers')
 
 var ravendb = require('../ravendb')
 var localDatastore = {   defaultDatabase:  ravendb()
@@ -12,18 +12,7 @@ var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
                       }
 
 // Intercept database api calls
-localDatastore.defaultDatabase.constructor.prototype.apiCall = function(verb, url, body, headers, cb) {
-  if (typeof body === 'function') {
-    cb = body
-    body = null
-    headers = null
-  } else if (typeof headers === 'function') {
-    cb = headers
-    headers = null
-  }
-
-  cb(null, { statusCode: 200, body: JSON.stringify({ verb: verb, url: url, body: body, headers: headers }) })
-}
+helpers.mockApiCalls(localDatastore.defaultDatabase)
 
  
 vows.describe('Document Operations').addBatch({
@@ -31,7 +20,7 @@ vows.describe('Document Operations').addBatch({
 		topic: localDatastore.defaultDatabase,
 		'should get a document using docs resource with the doc id': function(db) {
 			db.getDocument('users/tony', function(err, doc) {
-        assert.equal('get', doc.verb, 'getDocument should use HTTP GET')
+        assert.equal(doc.verb, 'get', 'getDocument should use HTTP GET')
         assert.ok(/\/docs\/users\/tony/.test(doc.url), 'Url should contain "/docs/{id}"')
 		  })
     }
@@ -45,10 +34,10 @@ vows.describe('Document Operations').addBatch({
   'An instance of a remote Database object': {
     topic: remoteDatastore,
     'should have a base url that matches the datastore url for the default database': function(datastore) {
-      assert.equal('http://example.com', datastore.defaultDatabase.getUrl())
+      assert.equal(datastore.defaultDatabase.getUrl(), 'http://example.com')
     },
     'should have a base url that matches the datastore url with the databases resource': function(datastore) {
-      assert.equal('http://example.com/databases/foobar', datastore.foobarDatabase.getUrl())
+      assert.equal(datastore.foobarDatabase.getUrl(), 'http://example.com/databases/foobar')
     }
   }
 }).export(module)
