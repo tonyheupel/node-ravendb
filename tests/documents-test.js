@@ -12,13 +12,15 @@ var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
                       }
 
 // Intercept database api calls
-helpers.mockApiCalls(localDatastore.defaultDatabase)
+
 
  
 vows.describe('Document Operations').addBatch({
 	'An instance of a Database object': {
 		topic: localDatastore.defaultDatabase,
 		'should get a document using docs resource with the doc id': function(db) {
+      helpers.mockApiCalls(localDatastore.defaultDatabase)
+
 			db.getDocument('users/tony', function(err, doc) {
         assert.equal(doc.verb, 'get', 'getDocument should use HTTP GET')
         assert.ok(/\/docs\/users\/tony/.test(doc.url), 'Url should contain "/docs/{id}"')
@@ -38,6 +40,15 @@ vows.describe('Document Operations').addBatch({
     },
     'should have a base url that matches the datastore url with the databases resource': function(datastore) {
       assert.equal(datastore.foobarDatabase.getUrl(), 'http://example.com/databases/foobar')
+    }
+  },
+  'An instance of a Database object': {
+    topic: localDatastore.defaultDatabase,
+    'should return the Key and E-Tag of the document when successfully saved': function(db) {
+      helpers.mockApiCalls(localDatastore.defaultDatabase, 201)
+      db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {
+        // TODO: Fake out a response here.
+      })
     }
   }
 }).export(module)

@@ -1,8 +1,14 @@
 // test-helpers.js
 var helpers = {
 
-  mockApiCalls: function(database, statusCode) {
+  mockApiCalls: function(database, statusCode, returnObject) {
     if (!statusCode) statusCode = 200
+
+    if (typeof statusCode === 'object') {
+      returnObject = statusCode
+      statusCode = 200
+    }
+
     database.apiCall = function(verb, url, body, headers, cb) {
       if (typeof body === 'function') {
         cb = body
@@ -13,7 +19,8 @@ var helpers = {
         headers = null
       }
 
-      cb(null, { statusCode: statusCode, body: JSON.stringify({ verb: verb, url: url, body: body, headers: headers }) })
+      retObj = returnObject || { statusCode: statusCode, body: JSON.stringify({ verb: verb, url: url, body: body, headers: headers }) }
+      cb(null, retObj)
     }
   }
 
