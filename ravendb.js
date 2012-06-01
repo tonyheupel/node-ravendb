@@ -1,5 +1,4 @@
-var request = require('request')
-  , Datastore = require('./datastore')
+var Datastore = require('./datastore')
 
 module.exports = ravendb = function(datastoreUrl, databaseName) {
   var r = new Datastore(datastoreUrl)
