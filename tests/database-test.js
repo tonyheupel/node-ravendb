@@ -33,7 +33,7 @@ vows.describe('Database Operations').addBatch({
       })
     },
     'should return the Key and E-Tag of the document when successfully saved': function(db) {
-      mockResponse = { statusCode: 201, body: { Key: 'users/tony', ETag: '00000000-0000-0900-0000-000000000016'} }
+      mockResponse = { statusCode: 201, body: "{ Key: 'users/tony', ETag: '00000000-0000-0900-0000-000000000016'}" }
       helpers.mockApiCalls(db, 201, mockResponse)
 
       db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {

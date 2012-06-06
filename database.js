@@ -38,9 +38,9 @@ Database.DYNAMIC_INDEX = 'dynamic'
 
 
 Database.prototype.getCollections = function(cb) {
-  this.apiGetCall(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, body) {
-    if (!error) {
-      if (cb) cb(null, body)
+  this.apiGetCall(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, response) {
+    if (!error && response.statusCode == 200) {
+      if (cb) cb(null, JSON.parse(response.body))
     }
     else {
       if (cb) cb(error)
@@ -80,7 +80,12 @@ Database.prototype.saveDocument = function(collection, doc, cb) {
 
 Database.prototype.getDocument = function(id, cb) {
   var url = this.getDocUrl(id)
-  this.apiGetCall(url, cb)
+  this.apiGetCall(url, function(error, response) {
+    if (!error && response.statusCode == 200) cb(null, JSON.parse(response.body))
+    else {
+      cb(error)
+    }
+  })
 }
 
 
@@ -286,15 +291,7 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
   }
 
   this.apiCall('get', url, null, headers, function(error, response) {
-    if (!error && response.statusCode == 200) {
-      if (cb) cb(null, response.body)
-    }
-    else {
-      if (cb) {
-        if (error) cb(error)
-        else cb(new Error(response.statusCode + ' - ' + response.body))
-      }
-    }
+    cb(error, response)
   })
 }
 

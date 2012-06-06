@@ -1,4 +1,6 @@
 // helpers.js
+
+var util = require('util')
 var helpers = {
 
   mockApiCalls: function(database, statusCode, returnObject) {
@@ -19,7 +21,7 @@ var helpers = {
         headers = null
       }
 
-      if (!returnObject) returnObject = { statusCode: statusCode, body: { verb: verb, url: url, body: body, headers: headers } }
+      if (!returnObject) returnObject = { statusCode: statusCode, body: '{ "verb": "' + verb + '", "url": "' + url + '", "body": "' + util.inspect(body) + '", "headers": "' + headers + '"}' }
 
       cb(null, returnObject)
     }
