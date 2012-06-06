@@ -5,7 +5,7 @@ var Database = function(datastore, name) {
 }
 
 
-Database.prototype.getUrl = function() { 
+Database.prototype.getUrl = function() {
   var url = this.datastore.url
 
   if (this.name != 'Default') {
@@ -27,8 +27,8 @@ Database.prototype.getTermsUrl = function(index, field) {
 
 Database.prototype.getQueriesUrl = function() { return this.getUrl() + '/queries' }
 Database.prototype.getBulkDocsUrl = function() { return this.getUrl() + '/bulk_docs' }
-Database.prototype.getBulkDocsIndexUrl = function (index, query) { 
-  return this.getBulkDocsUrl() + '/' + index + '?query=' + this.luceneQueryArgs(query) 
+Database.prototype.getBulkDocsIndexUrl = function (index, query) {
+  return this.getBulkDocsUrl() + '/' + index + '?query=' + this.luceneQueryArgs(query)
 }
 
 
@@ -38,9 +38,9 @@ Database.DYNAMIC_INDEX = 'dynamic'
 
 
 Database.prototype.getCollections = function(cb) {
-  this.apiGetCall(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, response) {
-    if (!error && response.statusCode == 200) {
-      if (cb) cb(null, JSON.parse(response.body))
+  this.apiGetCall(this.getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'), function (error, body) {
+    if (!error) {
+      if (cb) cb(null, body)
     }
     else {
       if (cb) cb(error)
@@ -91,7 +91,7 @@ Database.prototype.getDocuments = function(ids, cb) {
     if (!error && response.statusCode == 200) {
       if (cb) cb(null, response.body)
     } else {
-      if (cb) { 
+      if (cb) {
         if (error) cb(error)
         else cb(new Error('Unable to find documents: ' + response.statusCode + ' - ' + response.body))
       }
@@ -268,7 +268,7 @@ Database.prototype.luceneQueryArgs = function(query) {
 
   for (field in query) {
     if (afterFirst) qs += '+'
-    
+
     qs += field + ':' + query[field]
 
     afterFirst = true
@@ -284,10 +284,10 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
     cb = headers
     headers = null
   }
-  
+
   this.apiCall('get', url, null, headers, function(error, response) {
     if (!error && response.statusCode == 200) {
-      if (cb) cb(null, (response.body && response.body.length > 0) ? JSON.parse(response.body) : null)
+      if (cb) cb(null, response.body)
     }
     else {
       if (cb) {
@@ -316,7 +316,7 @@ Database.prototype.apiPostCall = function(url, body, headers, cb) {
     cb = headers
     headers = null
   }
-  
+
 	this.apiCall('post', url, body, headers, cb) // Maybe check for UPDATED here?
 }
 
@@ -326,7 +326,7 @@ Database.prototype.apiPatchCall = function(url, body, headers, cb) {
     cb = headers
     headers = null
   }
-  
+
 	this.apiCall('patch', url, body, headers, cb) // Maybe check for success here?
 }
 
@@ -340,7 +340,7 @@ Database.prototype.apiDeleteCall = function(url, body, headers, cb) {
     cb = headers
     headers = null
   }
-  
+
 	this.apiCall('delete', url, body, headers, cb) // Maybe check for DELETED here?
 }
 
@@ -350,7 +350,7 @@ var request = require('request')
 Database.prototype.apiCall = function(verb, url, body, headers, cb) {
   var verb = verb.toLowerCase()
   var op
-  
+
   switch(verb) {
     case 'get':
       op = request.get
@@ -358,7 +358,7 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
     case 'put':          // create new when client can't predict id
       op = request.put
       break
-    case 'post':         // override definition of resource with id 
+    case 'post':         // override definition of resource with id
       op = request.post
       break
     case 'patch':        // update part of an existing resource
@@ -370,9 +370,9 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
       break
     default:
       throw new Error('No operation matched the verb "' + verb +'"')
-      break    
+      break
   }
-  
+
   op.call(request, { uri: url, json: body, headers: headers}, cb)
 }
 

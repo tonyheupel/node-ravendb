@@ -2,7 +2,7 @@
 var Datastore = require('../datastore')
   , vows = require('vows')
   , assert = require('assert')
-  , helpers = require('./test-helpers')
+  , helpers = require('./helpers')
 
 vows.describe('Datastore Operations').addBatch({
   'A Datastore object dealing with Tenants': {

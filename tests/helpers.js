@@ -1,4 +1,4 @@
-// test-helpers.js
+// helpers.js
 var helpers = {
 
   mockApiCalls: function(database, statusCode, returnObject) {
@@ -20,6 +20,7 @@ var helpers = {
       }
 
       if (!returnObject) returnObject = { statusCode: statusCode, body: { verb: verb, url: url, body: body, headers: headers } }
+
       cb(null, returnObject)
     }
   }

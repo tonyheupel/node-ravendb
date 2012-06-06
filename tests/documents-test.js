@@ -1,12 +1,10 @@
 // test-documents.js
 var vows = require('vows')
   , assert = require('assert')
-  , helpers = require('./test-helpers')
+  , helpers = require('./helpers')
 
 var ravendb = require('../ravendb')
-var localDatastore = {   defaultDatabase:  ravendb()
-                       , foobarDatabase: ravendb(null, 'foobar') 
-                     }
+
 var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
                         , foobarDatabase: ravendb('http://example.com', 'foobar')
                       }
@@ -14,21 +12,37 @@ var remoteDatastore = {   defaultDatabase: ravendb('http://example.com')
 // Intercept database api calls
 
 
- 
-vows.describe('Document Operations').addBatch({
+
+vows.describe('Database Operations').addBatch({
 	'An instance of a Database object': {
-		topic: localDatastore.defaultDatabase,
+		topic: ravendb(),
 		'should get a document using docs resource with the doc id': function(db) {
-      helpers.mockApiCalls(localDatastore.defaultDatabase)
+      helpers.mockApiCalls(db)
 
 			db.getDocument('users/tony', function(err, doc) {
         assert.equal(doc.verb, 'get', 'getDocument should use HTTP GET')
         assert.ok(/\/docs\/users\/tony/.test(doc.url), 'Url should contain "/docs/{id}"')
-		  })
+      })
+    },
+    'should get the Collections list by using the terms resource against the Raven/DocumentsByEntityName index to retrieve the unique Tag values': function(db) {
+      helpers.mockApiCalls(db)
+
+      db.getCollections(function(err, doc) {
+        assert.equal(doc.verb, 'get', 'getCollections should use HTTP GET')
+        assert.ok(/\/terms\/Raven\/DocumentsByEntityName\?field=Tag/.test(doc.url), 'Url should contain "/terms/Raven/DocumentsByEntityName?field=Tag" but was "' + doc.url + '"')
+      })
+    },
+    'should return the Key and E-Tag of the document when successfully saved': function(db) {
+      mockResponse = { statusCode: 201, body: { Key: 'users/tony', ETag: '00000000-0000-0900-0000-000000000016'} }
+      helpers.mockApiCalls(db, 201, mockResponse)
+
+      db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {
+        assert.deepEqual(r, mockResponse.body)
+      })
     }
   },
   'An instance of a non-default Database object': {
-    topic: localDatastore.foobarDatabase,
+    topic: ravendb(null, 'foobar'),
     'should have a base url that includes the database resource and the database name': function(db) {
       assert.ok(/\/databases\/foobar/.test(db.getUrl()), 'Database url should contain "/databases/{databasename}"')
     }
@@ -40,17 +54,6 @@ vows.describe('Document Operations').addBatch({
     },
     'should have a base url that matches the datastore url with the databases resource': function(datastore) {
       assert.equal(datastore.foobarDatabase.getUrl(), 'http://example.com/databases/foobar')
-    }
-  },
-  'An instance of a Database object': {
-    topic: localDatastore.defaultDatabase,
-    'should return the Key and E-Tag of the document when successfully saved': function(db) {
-      mockResponse = { statusCode: 201, body: { Key: 'users/tony', ETag: '00000000-0000-0900-0000-000000000016'} }
-      helpers.mockApiCalls(localDatastore.defaultDatabase, 201, mockResponse)
-
-      db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {
-        assert.deepEqual(r, mockResponse.body)
-      })
     }
   }
 }).export(module)
