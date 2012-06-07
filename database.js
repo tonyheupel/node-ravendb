@@ -155,6 +155,7 @@ Database.prototype.find = function(doc, start, count, cb) {
   }
 
   this.dynamicQuery(doc, start, count, function(error, results) {
+    var results = JSON.parse(results.body)
     var matches = results && results.Results ? results.Results : null
     cb(error, matches)
   })
@@ -172,6 +173,7 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
   }
 
   this.queryRavenDocumentsByEntityName(collection, start, count, function(error, results) {
+    var results = JSON.parse(results.body)
     cb(error, results && results.Results ? results.Results : null)
   })
 }
@@ -180,13 +182,17 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
 Database.prototype.getDocumentCount = function(collection, cb) {
   // Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
   this.queryRavenDocumentsByEntityName(collection, 0, 0, function(error, results) {
+    var results = JSON.parse(results.body)
     cb(error, results && results.TotalResults ? results.TotalResults : null)
   })
 }
 
 
 Database.prototype.getStats = function(cb) {
-  this.apiGetCall(this.getStatsUrl(), cb)
+  this.apiGetCall(this.getStatsUrl(), function(error, results) {
+    var stats = JSON.parse(results.body)
+    cb(error, stats)
+  })
 }
 
 
@@ -214,9 +220,9 @@ Database.prototype.queryByIndex = function(index, query, start, count, cb) {
     count = null
   }
 
-  if (!start) start = 0
-  if (!count) count = 25  // Arbitrary count...
-  // if start and count aren't passed in, you'll just get the TotalResults property
+  if (typeof start === 'undefined' || start === null) start = 0
+  if (typeof count === 'undefined' || count === null) count = 25  // Arbitrary count...
+  // if start and count are set to 0, you'll just get the TotalResults property
   // and no results
 
   var url = this.getIndexUrl(index) + '?start=' + start + '&pageSize=' + count + '&aggregation=None&query='
