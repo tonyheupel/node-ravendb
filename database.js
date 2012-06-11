@@ -376,7 +376,11 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
       break
   }
 
-  op.call(request, { uri: url, json: body, headers: headers}, cb)
+  var req = { uri: url, headers: headers}
+  // if passing in an object, use json instead of body so that it sends application/json
+  req[(typeof body === 'object') ? 'json' : 'body'] = body, 
+  
+  op.call(request, req, cb)
 }
 
 
