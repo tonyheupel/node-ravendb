@@ -301,7 +301,7 @@ Database.prototype.getAttachment = function(id, cb) {
   })
 }
 
-Database.prototype.deleteDocument = function(id, cb) {
+Database.prototype.deleteAttachment = function(id, cb) {
   var url = this.getAttachmentUrl(id)
   // TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
   this.apiDeleteCall(url, function(error, response) {
