@@ -23,6 +23,8 @@ Database.prototype.getIndexUrl = function(index) { return this.getIndexesUrl() +
 Database.prototype.getTermsUrl = function(index, field) {
   return this.getUrl() + '/terms/' + index + '?field=' + field
 }
+Database.prototype.getStaticUrl = function() { return this.getUrl() + '/static' }
+Database.prototype.getAttachmentUrl = function(id) { return this.getStaticUrl() + '/' + id }
 
 
 Database.prototype.getQueriesUrl = function() { return this.getUrl() + '/queries' }
@@ -266,6 +268,23 @@ Database.prototype.deleteIndex = function(index, cb) {
       if (cb) {
         if (error) cb(error)
           else cb(new Error('Unable to delete index: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
+
+// Attachment methods
+Database.prototype.saveAttachment = function(docId, content, headers, cb) {
+  var url = this.getAttachmentUrl(docId)
+
+  this.apiPutCall(url, content, headers, function(error, response) {
+    if (!error && response.statusCode == 201) {
+      if (cb) cb(null, response.body && response.body.length > 0 ? JSON.parse(response.body) : null)
+    } else {
+      if (cb) {
+        if (error) cb(error)
+        else cb(new Error('Unable to save attachment: ' + response.statusCode + ' - ' + response.body))
       }
     }
   })

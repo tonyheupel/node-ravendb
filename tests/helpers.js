@@ -21,7 +21,7 @@ var helpers = {
         headers = null
       }
 
-      if (!returnObject) returnObject = { statusCode: statusCode, body: '{ "verb": "' + verb + '", "url": "' + url + '", "body": "' + util.inspect(body) + '", "headers": "' + headers + '"}' }
+      if (!returnObject) returnObject = { statusCode: statusCode, body: '{ "verb": "' + verb + '", "url": "' + url + '", "body": "' + (typeof body === 'object' ? util.inspect(body) : body) + '", "headers": "' + util.inspect(headers) + '"}' }
 
       cb(null, returnObject)
     }

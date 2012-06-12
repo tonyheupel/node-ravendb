@@ -39,6 +39,18 @@ vows.describe('Database Operations').addBatch({
       db.saveDocument('Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel'}, function(e,r) {
         assert.deepEqual(r, mockResponse.body)
       })
+    },
+    'should put to the static resource when saving an attachment': function(db) {
+      helpers.mockApiCalls(db, 201)
+      var docId = "javascripts/alert.js"
+        , content = "alert('hi')"
+        , headers = { 'Content-Type': 'text/javascript' }
+
+      db.saveAttachment(docId, content, headers, function(err, doc) {
+        assert.equal(doc.verb, 'put')
+        assert.ok(/\/static\/javascripts\/alert.js/.test(doc.url))
+        assert.equal(doc.body, "alert('hi')")
+      })
     }
   },
   'An instance of a non-default Database object': {
