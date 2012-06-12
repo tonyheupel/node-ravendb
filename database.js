@@ -291,6 +291,31 @@ Database.prototype.saveAttachment = function(docId, content, headers, cb) {
 }
 
 
+Database.prototype.getAttachment = function(id, cb) {
+  var url = this.getAttachmentUrl(id)
+  this.apiGetCall(url, function(error, response) {
+    if (!error && response.statusCode == 200) cb(null, response)
+    else {
+      cb(error)
+    }
+  })
+}
+
+Database.prototype.deleteDocument = function(id, cb) {
+  var url = this.getAttachmentUrl(id)
+  // TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
+  this.apiDeleteCall(url, function(error, response) {
+    if (!error && response.statusCode == 204) {  // 204 - No content
+      if (cb) cb(null, response.body)
+    } else {
+      if (cb) {
+        if (error) cb(error)
+          else cb(new Error('Unable to delete attachment: ' + response.statusCode + ' - ' + response.body))
+      }
+    }
+  })
+}
+
 // helper methods
 Database.prototype.luceneQueryArgs = function(query) {
   var qs = ''
