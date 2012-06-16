@@ -425,7 +425,7 @@ Database.prototype.apiCall = function(verb, url, bodyOrReadableStream, headers, 
   //   see if it's a ReadableStream; if so, pipe it, 
   //   else json so it sends application/json mime type
   // else set the body
-  if (typeof bodyOrReadableStream === 'object' && bodyOrReadableStream.isReadable && bodyOrReadableStream.isReadable()) {
+  if (bodyOrReadableStream &&  typeof bodyOrReadableStream === 'object' && bodyOrReadableStream.isReadable && bodyOrReadableStream.isReadable()) {
     bodyOrReadableStream.pipe(op.call(request, req, cb))
     return
   }
