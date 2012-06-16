@@ -394,7 +394,7 @@ Database.prototype.apiDeleteCall = function(url, body, headers, cb) {
 
 var request = require('request')
 
-Database.prototype.apiCall = function(verb, url, body, headers, cb) {
+Database.prototype.apiCall = function(verb, url, bodyOrReadableStream, headers, cb) {
   var verb = verb.toLowerCase()
   var op
 
@@ -421,8 +421,16 @@ Database.prototype.apiCall = function(verb, url, body, headers, cb) {
   }
 
   var req = { uri: url, headers: headers}
-  // if passing in an object, use json instead of body so that it sends application/json
-  req[(typeof body === 'object') ? 'json' : 'body'] = body, 
+  // if passing in an object, 
+  //   see if it's a ReadableStream; if so, pipe it, 
+  //   else json so it sends application/json mime type
+  // else set the body
+  if (typeof bodyOrReadableStream === 'object' && bodyOrReadableStream.isReadable && bodyOrReadableStream.isReadable()) {
+    bodyOrReadableStream.pipe(op.call(request, req, cb))
+    return
+  }
+
+  req[(typeof bodyOrReadableStream === 'object') ? 'json' : 'body'] = bodyOrReadableStream
   
   op.call(request, req, cb)
 }

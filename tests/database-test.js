@@ -1,6 +1,7 @@
 // test-documents.js
 var vows = require('vows')
   , assert = require('assert')
+  , fs = require('fs')
   , helpers = require('./helpers')
 
 var ravendb = require('../ravendb')
@@ -50,6 +51,16 @@ vows.describe('Database Operations').addBatch({
         assert.equal(doc.verb, 'put')
         assert.ok(/\/static\/javascripts\/alert.js/.test(doc.url))
         assert.equal(doc.body, "alert('hi')")
+      })
+    },
+    'should work with a ReadableStream as the bodyOrReadableStream parameter' : function(db) {
+      helpers.mockApiCalls(db, 201)
+      var docId = "images/foobar.jpg"
+        , readableStream = fs.createReadStream('./tony.jpeg')
+
+      db.saveAttachment(docId, readableStream, function(err, doc) {
+        var body = doc.body.replace(/\n/g, "")
+        var stream = JSON.parse(body).body
       })
     }
   },
