@@ -13,7 +13,7 @@ Luckily, RavenDB has an excellent HTTP API, so this library was written against 
 Requirements
 ------------
 * Node.js >= 0.6
-* A RavenDB to access
+* A RavenDB to access (inluding RavenHQ)
 
 Usage
 -----
@@ -39,4 +39,13 @@ otherdb.getDocument('things/foobar', function(err, result) {
 	if (err) console.error(err)
 	else console.log(result)
 })
+
+// Use RavenHQ
+var hq = ravendb('https://1.ravenhq.com', 'tony-test')
+hq.useRavenHq('0f2bb123-b5ad-4e92-9ec5-7026bff5b933') // Set API KEY
+hq.getDocument('things/foobar, function(err, result) {
+	if (err) console.error(err)
+	else console.log(result)
+})
+
 ```

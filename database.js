@@ -2,6 +2,7 @@
 var Database = function(datastore, name) {
   this.datastore = datastore
   this.name = name
+  this.authorization = null // Nothing by default
 }
 
 
@@ -35,8 +36,11 @@ Database.prototype.getBulkDocsIndexUrl = function (index, query) {
 
 
 Database.prototype.getStatsUrl = function() { return this.getUrl() + '/stats' }
+Database.prototype.setAuthorization = function(authValue) { this.authorization = authValue }
+
 Database.DOCUMENTS_BY_ENTITY_NAME_INDEX = 'Raven/DocumentsByEntityName'
 Database.DYNAMIC_INDEX = 'dynamic'
+
 
 
 Database.prototype.getCollections = function(cb) {
@@ -333,11 +337,26 @@ Database.prototype.luceneQueryArgs = function(query) {
 }
 
 
+// Authorization providers
+Database.prototype.useRavenHq = function(apiKey, cb) {
+  var database = this
+  request.get({ uri: database.getDocsUrl() }, function(err, denied) { // should be https://1.ravenhq.com/docs
+    // denied.headers['oauth-source'] = https://oauth.ravenhq.com/ApiKeys/OAuth/AccessToken
+    request.get({   uri: denied.headers['oauth-source']
+                  , headers: { "Api-Key": apiKey }
+                }, function(err, oauth) {
+                  database.setAuthorization("Bearer " + oauth.body)
+                  if (cb) cb(err, oauth)
+    })          
+  })
+}
+
+
 // base API get calls
 Database.prototype.apiGetCall = function(url, headers, cb) {
   if (typeof headers == 'function') {
     cb = headers
-    headers = null
+    headers = {}
   }
 
   this.apiCall('get', url, null, headers, function(error, response) {
@@ -349,7 +368,7 @@ Database.prototype.apiGetCall = function(url, headers, cb) {
 Database.prototype.apiPutCall = function(url, body, headers, cb) {
   if (typeof headers == 'function') {
     cb = headers
-    headers = null
+    headers = {}
   }
 
   this.apiCall('put', url, body, headers, function(error, response) {
@@ -361,7 +380,7 @@ Database.prototype.apiPutCall = function(url, body, headers, cb) {
 Database.prototype.apiPostCall = function(url, body, headers, cb) {
   if (typeof headers == 'function') {
     cb = headers
-    headers = null
+    headers = {}
   }
 
 	this.apiCall('post', url, body, headers, cb) // Maybe check for UPDATED here?
@@ -371,7 +390,7 @@ Database.prototype.apiPostCall = function(url, body, headers, cb) {
 Database.prototype.apiPatchCall = function(url, body, headers, cb) {
   if (typeof headers == 'function') {
     cb = headers
-    headers = null
+    headers = {}
   }
 
 	this.apiCall('patch', url, body, headers, cb) // Maybe check for success here?
@@ -382,10 +401,10 @@ Database.prototype.apiDeleteCall = function(url, body, headers, cb) {
   if (typeof body == 'function') {
     cb = body
     body = null
-    headers = null
+    headers = {}
   } else if (typeof headers == 'function') {
     cb = headers
-    headers = null
+    headers = {}
   }
 
 	this.apiCall('delete', url, body, headers, cb) // Maybe check for DELETED here?
@@ -419,6 +438,8 @@ Database.prototype.apiCall = function(verb, url, bodyOrReadableStream, headers, 
       throw new Error('No operation matched the verb "' + verb +'"')
       break
   }
+
+  if (this.authorization) { headers.Authorization = this.authorization }
 
   var req = { uri: url, headers: headers}
   // if passing in an object, 
