@@ -43,7 +43,7 @@ otherdb.getDocument('things/foobar', function(err, result) {
 // Use RavenHQ
 var hq = ravendb('https://1.ravenhq.com', 'tony-test')
 hq.useRavenHq('0f2bb123-b5ad-4e92-9ec5-7026bff5b933') // Set API KEY
-hq.getDocument('things/foobar, function(err, result) {
+hq.getDocument('things/foobar', function(err, result) {
 	if (err) console.error(err)
 	else console.log(result)
 })
