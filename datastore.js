@@ -18,7 +18,7 @@ Datastore.prototype.useDatabase = function(name) {
 
   this.currentDatabase = this.databases[name]
 
-  return this.currentDatabase  
+  return this.currentDatabase
 }
 
 

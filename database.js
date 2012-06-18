@@ -347,7 +347,7 @@ Database.prototype.useRavenHq = function(apiKey, cb) {
                 }, function(err, oauth) {
                   database.setAuthorization("Bearer " + oauth.body)
                   if (cb) cb(err, oauth)
-    })          
+    })
   })
 }
 
@@ -442,8 +442,8 @@ Database.prototype.apiCall = function(verb, url, bodyOrReadableStream, headers, 
   if (this.authorization) { headers.Authorization = this.authorization }
 
   var req = { uri: url, headers: headers}
-  // if passing in an object, 
-  //   see if it's a ReadableStream; if so, pipe it, 
+  // if passing in an object,
+  //   see if it's a ReadableStream; if so, pipe it,
   //   else json so it sends application/json mime type
   // else set the body
   if (bodyOrReadableStream &&  typeof bodyOrReadableStream === 'object' && bodyOrReadableStream.readable) {
@@ -452,7 +452,7 @@ Database.prototype.apiCall = function(verb, url, bodyOrReadableStream, headers, 
   }
 
   req[(typeof bodyOrReadableStream === 'object') ? 'json' : 'body'] = bodyOrReadableStream
-  
+
   op.call(request, req, cb)
 }
 
