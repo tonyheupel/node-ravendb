@@ -161,8 +161,10 @@ Database.prototype.find = function(doc, start, count, cb) {
   }
 
   this.dynamicQuery(doc, start, count, function(error, results) {
-    var results = JSON.parse(results.body)
-    var matches = results && results.Results ? results.Results : null
+    if (!error) {
+      var results = JSON.parse(results.body)
+      var matches = results && results.Results ? results.Results : null
+    }
     cb(error, matches)
   })
 }
@@ -179,7 +181,10 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
   }
 
   this.queryRavenDocumentsByEntityName(collection, start, count, function(error, results) {
-    var results = JSON.parse(results.body)
+    var results
+    if (!error) {
+      results = JSON.parse(results.body)
+    }
     cb(error, results && results.Results ? results.Results : null)
   })
 }
@@ -188,7 +193,10 @@ Database.prototype.getDocsInCollection = function(collection, start, count, cb) 
 Database.prototype.getDocumentCount = function(collection, cb) {
   // Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
   this.queryRavenDocumentsByEntityName(collection, 0, 0, function(error, results) {
-    var results = JSON.parse(results.body)
+    var results
+    if (!error) {
+      results = JSON.parse(results.body)
+    }
     cb(error, results && results.TotalResults ? results.TotalResults : null)
   })
 }
@@ -196,7 +204,10 @@ Database.prototype.getDocumentCount = function(collection, cb) {
 
 Database.prototype.getStats = function(cb) {
   this.apiGetCall(this.getStatsUrl(), function(error, results) {
-    var stats = JSON.parse(results.body)
+    var stats
+    if (!error) {
+      stats = JSON.parse(results.body)
+    }
     cb(error, stats)
   })
 }
