@@ -9,7 +9,7 @@
   ],
   "main": "./ravendb",
   "scripts": {
-    "test": "./node_modules/vows/bin/vows tests/* --spec"
+    "test": "./node_modules/vows/bin/vows lib/tests/* --spec"
   },
   "repository": {
     "type": "git",
