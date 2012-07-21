@@ -7,7 +7,7 @@
     {
     } 
   ],
-  "main": "./ravendb",
+  "main": "./lib/ravendb",
   "scripts": {
     "test": "./node_modules/vows/bin/vows lib/tests/* --spec"
   },
