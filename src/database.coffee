@@ -281,19 +281,11 @@ class Database
 
   # helper methods
   luceneQueryArgs: (query) ->
-    qs = ''
+    return null unless query?
 
-    if query?
-      afterFirst = false
-
-      for field in query
-        qs += '+' if afterFirst?
-
-        qs += field + ':' + query[field]
-
-        afterFirst = true
-
-    qs
+    pairs = []
+    pairs.push "#{key}:#{value}" for key, value of query
+    pairs.join '+'
 
 
 
