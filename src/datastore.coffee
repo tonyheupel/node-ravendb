@@ -9,7 +9,7 @@ class Datastore
 
   useDatabase: (name) ->
     # TODO: Connect and find it
-    @databases[name] = new Database(this, name) unless @databases[name]?
+    @databases[name] = new Database(@, name) unless @databases[name]?
     @currentDatabase = @databases[name]
     @currentDatabase
 
@@ -20,17 +20,17 @@ class Datastore
 
   createDatabase: (name, dataDirectory, cb) ->
     # Put a document in the default database to add this tenant
-    if typeof dataDirectory == 'function'
+    if typeof dataDirectory is 'function'
       cb = dataDirectory
-      dataDirectory = '~/Tenants/' + name
+      dataDirectory = "~/Tenants/#{name}"
 
-    @defaultDatabase.saveDocument null, { id: 'Raven/Databases/' + name, 'Settings': { 'Raven/DataDir': dataDirectory } }, (error, result) ->
+    @defaultDatabase.saveDocument null, { id: "Raven/Databases/#{name}", 'Settings': { 'Raven/DataDir': dataDirectory } }, (error, result) ->
       cb(error, result)
 
 
   deleteDatabase: (name, cb) ->
     # Delete a document in the default database to add this tenant
-    @defaultDatabase.deleteDocument 'Raven/Databases/' + name, (error, result) ->
+    @defaultDatabase.deleteDocument "Raven/Databases/#{name}", (error, result) ->
       cb(error, result)
 
 
