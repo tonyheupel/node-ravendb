@@ -55,7 +55,7 @@ class Database
 
 
   getCollections: (cb) ->
-    @apiGetCall @getTermsUrl(@DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'),  (error, response) ->
+    @apiGetCall @getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'),  (error, response) ->
       if !error and response.statusCode is 200
         cb(null, JSON.parse(response.body)) if cb?
       else if cb?
@@ -186,12 +186,12 @@ class Database
 
 
   dynamicQuery: (doc, start, count, cb) ->
-    @queryByIndex(@DYNAMIC_INDEX, doc, start, count, cb)
+    @queryByIndex(Database.DYNAMIC_INDEX, doc, start, count, cb)
 
 
   queryRavenDocumentsByEntityName: (name, start, count, cb) ->
     search = if name? then { Tag:name } else null
-    @queryByIndex(@DOCUMENTS_BY_ENTITY_NAME_INDEX, search, start, count, cb)
+    @queryByIndex(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, search, start, count, cb)
 
 
   queryByIndex: (index, query, start=0, count=25, cb) ->

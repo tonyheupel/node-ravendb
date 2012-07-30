@@ -56,7 +56,7 @@ vows.describe('Database Operations').addBatch
     'should work with a ReadableStream as the bodyOrReadableStream parameter' : (db) ->
       helpers.mockApiCalls(db, 201)
       docId = "images/foobar.jpg"
-      readableStream = fs.createReadStream('./tony.jpeg')
+      readableStream = fs.createReadStream("#{__dirname}/tony.jpeg")
 
       db.saveAttachment docId, readableStream, (err, doc) ->
         body = doc.body.replace(/\n/g, "")
