@@ -41,6 +41,14 @@ vows.describe('Database Operations').addBatch
         assert.deepEqual(r, mockResponse.body)
 
 
+    'should return an error when there is an error on the call': (db) ->
+      mockResponse = { statusCode: 500, body: "{ Error: 'ERROR', Message: 'There was an error' }" }
+      helpers.mockApiCalls db, 500, mockResponse
+
+      db.saveDocument 'Users', { id: 'users/tony', firstName: 'Tony', lastName: 'Heupel' }, (e,r) ->
+        assert.deepEqual e, new Error(mockResponse.body)
+
+
     'should put to the static resource when saving an attachment': (db) ->
       helpers.mockApiCalls(db, 201)
       docId = "javascripts/alert.js"
