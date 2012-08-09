@@ -5,9 +5,7 @@ class Database
   @DOCUMENTS_BY_ENTITY_NAME_INDEX: 'Raven/DocumentsByEntityName'
   @DYNAMIC_INDEX: 'dynamic'
 
-  constructor: (datastore, name) ->
-    @datastore = datastore
-    @name = name
+  constructor: (@datastore, @name) ->
     @authorization = null # Nothing by default
 
 
