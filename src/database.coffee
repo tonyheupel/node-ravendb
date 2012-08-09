@@ -61,6 +61,8 @@ class Database
       else if cb?
         cb(error)
 
+    return null
+
 
   saveDocument: (collection, doc, cb) ->
     # If not id provided, use POST to allow server-generated id
@@ -84,6 +86,8 @@ class Database
           if error? then cb(error)
           else cb(new Error('Unable to create document: ' + response.statusCode + ' - ' + response.body))
 
+    return null
+
 
   getDocument: (id, cb) ->
     url = @getDocUrl(id)
@@ -92,6 +96,8 @@ class Database
         cb(null, JSON.parse(response.body))
       else
         cb(error)
+
+    return null
 
 
   getDocuments: (ids, cb) ->
@@ -120,6 +126,8 @@ class Database
           if error? then cb(error)
           else cb(new Error('Unable to delete document: ' + response.statusCode + ' - ' + response.body))
 
+    return null
+
 
   # Set-based updates
 
@@ -133,6 +141,8 @@ class Database
         if cb?
           if error? cb(error)
           else cb(new Error('Unable to delete documents: ' + response.statusCode + ' - ' + response.body))
+
+    return null
 
 
   # Search
@@ -155,6 +165,7 @@ class Database
 
     return null
 
+
   getDocsInCollection: (collection, start, count, cb) ->
     if typeof start is 'function'
       cb = start
@@ -170,6 +181,7 @@ class Database
       cb(error, if results?.Results? then results.Results else null)
 
     return null
+
 
   getDocumentCount: (collection, cb) ->
     # Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
@@ -212,7 +224,8 @@ class Database
     # if start and count are set to 0, you'll just get the TotalResults property
     # and no results
 
-    url = "#{@getIndexUrl(index)}?start=#{start}&pageSize=#{count}&aggregation=None&query=#{@luceneQueryArgs(query)}"
+    url = "#{@getIndexUrl(index)}?start=#{start}&pageSize=#{count}&aggregation=None"
+    url += "&query=#{@luceneQueryArgs(query)}" if query?
 
     @apiGetCall(url, cb)
 
@@ -381,6 +394,8 @@ class Database
     req[if typeof bodyOrReadableStream is 'object' then 'json' else 'body'] = bodyOrReadableStream
 
     op.call(request, req, cb)
+
+    return null
 
 
 

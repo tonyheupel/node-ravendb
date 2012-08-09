@@ -1,11 +1,11 @@
 {
   "name": "ravendb",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "author": "Tony Heupel <tonyheupel@gmail.com>",
   "description": "A node library for accessing RavenDB",
-  "contributors": [ 
+  "contributors": [
     {
-    } 
+    }
   ],
   "main": "./lib/ravendb",
   "scripts": {
@@ -16,14 +16,14 @@
     "url": "https://github.com/tchype/node-ravendb.git"
   },
   "keywords": [
-    "ravendb"  
+    "ravendb"
 	],
   "dependencies" : {
 	"request": "2.1.x"
   },
   "noAnalyze": true,
   "devDependencies": {
-    "coffee-script": ">1.3.3",
+    "coffee-script": ">=1.3.3",
     "vows": ">=0.6.2"
   },
   "bundleDependencies": [
