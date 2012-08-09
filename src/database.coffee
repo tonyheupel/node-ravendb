@@ -105,6 +105,7 @@ class Database
           if error? then cb(error)
           else cb(new Error('Unable to find documents: ' + response.statusCode + ' - ' + response.body))
 
+    return null
 
   # PATCH - Update
 
@@ -152,6 +153,7 @@ class Database
 
       cb(error, matches)
 
+    return null
 
   getDocsInCollection: (collection, start, count, cb) ->
     if typeof start is 'function'
@@ -167,6 +169,7 @@ class Database
 
       cb(error, if results?.Results? then results.Results else null)
 
+    return null
 
   getDocumentCount: (collection, cb) ->
     # Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
@@ -174,12 +177,15 @@ class Database
       results = JSON.parse(results.body) unless error?
       cb(error, if results?.TotalResults? then results.TotalResults else null)
 
+    return null
+
 
   getStats: (cb) ->
     @apiGetCall @getStatsUrl(), (error, results) ->
       stats = JSON.parse(results.body) unless error?
       cb(error, stats)
 
+    return null
 
 
   # Indexes

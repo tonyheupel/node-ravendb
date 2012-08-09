@@ -6,6 +6,7 @@ spawn = child_process.spawn
 task 'build', 'Build project from src/*.coffee to lib/*.js', ->
   exec 'coffee --compile --output lib/ src/', (err, stdout, stderr) ->
     throw err if err
+
     console.log stdout + stderr
 
 task 'watch', 'Watch src/*.coffee files and build them to lib/*.js when they change', ->
