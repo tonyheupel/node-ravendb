@@ -1,6 +1,6 @@
 {
   "name": "ravendb",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "author": "Tony Heupel <tonyheupel@gmail.com>",
   "description": "A node library for accessing RavenDB",
   "contributors": [
@@ -17,9 +17,10 @@
   },
   "keywords": [
     "ravendb"
-	],
+  ],
   "dependencies" : {
-	"request": "2.1.x"
+  "request": "2.1.x",
+  "portchecker": "0.x.x"
   },
   "noAnalyze": true,
   "devDependencies": {
