@@ -321,7 +321,7 @@ class Database
   useNTLM: (domain, username, password, cb) ->
     getPort = (cb) ->
       portchecker.getFirstAvailable 5000, 6000, 'localhost', (port, host) ->
-        cb(port)
+        cb(port, host)
 
     user_pwd = new Buffer("#{username}:#{password}").toString('base64')
     @setAuthorization "Basic #{user_pwd}"
@@ -329,7 +329,7 @@ class Database
     if @ntlm?
       return false
 
-    getPort (port) =>
+    getPort (port, host) =>
       try
         ntlmaps = spawn 'python', ["#{__dirname}/../deps/ntlmaps/main.py",
                                    "--domain=#{domain}",
@@ -339,6 +339,7 @@ class Database
 
         @ntlm = ntlmaps
         @ntlm.port = port
+        @ntlm.host = host
 
         process.on 'exit', ->
           ntlmaps.kill 'SIGINT'
@@ -426,7 +427,7 @@ class Database
     headers.Authorization = @authorization if @authorization?
 
     req = { uri: url, headers: headers }
-    req['proxy'] = "http://localhost:#{@ntlm.port}" if @ntlm?
+    req['proxy'] = "http://#{@ntlm.host}:#{@ntlm.port}" if @ntlm?
     # if passing in an object,
     #   see if it's a ReadableStream; if so, pipe it,
     #   else json so it sends application/json mime type
