@@ -19,8 +19,7 @@
     "ravendb"
   ],
   "dependencies" : {
-  "request": "2.1.x",
-  "portchecker": "0.x.x"
+  "request": "2.1.x"
   },
   "noAnalyze": true,
   "devDependencies": {
