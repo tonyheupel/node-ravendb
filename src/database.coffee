@@ -52,6 +52,10 @@ class Database
   setAuthorization: (authValue) ->
     @authorization = authValue
 
+  setBasicAuthorization: (username, password) ->
+    user_pwd = new Buffer("#{username}:#{password}").toString('base64')
+    @setAuthorization "Basic #{user_pwd}"
+
   setProxy: (proxyUrl) ->
     @proxy = proxyUrl
 
