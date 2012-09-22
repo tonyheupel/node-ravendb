@@ -1,6 +1,15 @@
 Datastore = require('./datastore')
 
-module.exports = ravendb = (datastoreUrl, databaseName='Default') ->
-  r = new Datastore(datastoreUrl)
 
-  r.useDatabase(databaseName) # returning the db object that is "used" here
+ravendb = (datastoreUrl, databaseName='Default') ->
+  ds = new Datastore(datastoreUrl)
+  ds.useDatabase(databaseName) # return the database being used
+
+
+# Expose the classes as members of the ravendb function so
+# other modules can tweak them :-)
+ravendb.Datastore = Datastore
+ravendb.Database = require('./database')
+
+
+module.exports = ravendb
