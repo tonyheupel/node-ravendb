@@ -9,15 +9,11 @@ class Database
   constructor: (@datastore, @name) ->
     @authorization = null # Nothing by default
     @proxy = null         # Nothing by default
-    @contentType = 'application/json'
 
   getUrl: ->
     url = @datastore.url
     url += "/databases/#{@name}" unless @name is 'Default'
     url
-
-  setContentType: (contentType)->
-    @contentType = contentType;
 
   getDocsUrl: ->
     "#{@getUrl()}/docs"
@@ -396,12 +392,17 @@ class Database
     #   see if it's a ReadableStream; if so, pipe it,
     #   else json so it sends application/json mime type
     # else set the body
-    if bodyOrReadableStream?.readable?
-      bodyOrReadableStream.pipe(op.call(request, req, cb))
-      return
+    if bodyOrReadableStream?
 
-    headers['content-type'] = @contentType
-    req['body'] = if typeof bodyOrReadableStream is 'object' then JSON.stringify(bodyOrReadableStream) else bodyOrReadableStream
+      if bodyOrReadableStream.readable?
+        bodyOrReadableStream.pipe(op.call(request, req, cb))
+        return
+
+      if typeof bodyOrReadableStream is 'object'
+        req.headers['content-type'] = 'application/json; charset=utf-8'
+        req.body = JSON.stringify(bodyOrReadableStream)
+      else
+        req.body = bodyOrReadableStream
 
     op.call(request, req, cb)
 
