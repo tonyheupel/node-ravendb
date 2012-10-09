@@ -189,11 +189,26 @@ class Database
 
   getDocumentCount: (collection, cb) ->
     # Passing in 0 and 0 for start and count simply returns the TotalResults and not the actual docs
-    @queryRavenDocumentsByEntityName collection, 0, 0, (error, results) ->
-      results = JSON.parse(results.body) unless error?
-      cb(error, if results?.TotalResults? then results.TotalResults else null)
+    @queryRavenDocumentsByEntityName collection, 0, 0, (error, response) ->
+      if error?
+        cb(error, null)
+        return
 
-    return null
+      manufacturedError = new Error("Unable to get document count: #{response.statusCode} - #{response.body}")
+
+      if response.statusCode >= 400
+        cb(manufacturedError, null)
+        return
+
+      results = JSON.parse(response.body)
+
+      if results?.TotalResults?
+        cb(null, results.TotalResults)
+      else
+        cb(manufacturedError, null)
+
+
+    return
 
 
   getStats: (cb) ->

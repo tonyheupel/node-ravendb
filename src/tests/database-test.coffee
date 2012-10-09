@@ -1,4 +1,3 @@
-# test-documents.js
 vows = require('vows')
 assert = require('assert')
 fs = require('fs')
@@ -15,9 +14,9 @@ remoteDatastore =
 
 
 vows.describe('Database Operations').addBatch
-	'An instance of a Database object':
-		topic: ravendb()
-		'should get a document using docs resource with the doc id': (db) ->
+  'An instance of a Database object':
+    topic: ravendb()
+    'should get a document using docs resource with the doc id': (db) ->
       helpers.mockApiCalls(db)
 
       db.getDocument 'users/tony', (err,doc) ->
@@ -70,6 +69,24 @@ vows.describe('Database Operations').addBatch
         body = doc.body.replace(/\n/g, "")
         stream = JSON.parse(body).body
 
+    'should handle a non-JSON response when receiving an error on saveDocument' : (db) ->
+      body = "<html><title>Permission Denied</title><body>You shall not pass!</body></html>"
+      status = 401
+      helpers.mockApiCalls(db, status, { statusCode: status, body: body })
+
+      db.saveDocument null, { id: 'some_id', value: 'some value' }, (err, resp) ->
+        assert.equal(null, resp)
+        assert.equal(err.message, "Unable to create document: #{status} - #{body}")
+
+
+    'should handle a non-JSON response when receiving an error on getDocumentCount' : (db) ->
+      body = "<html><title>Permission Denied</title><body>You shall not pass!</body></html>"
+      status = 401
+      helpers.mockApiCalls(db, status, { statusCode: status, body: body })
+
+      db.getDocumentCount null, (err, resp) ->
+        assert.equal(null, resp)
+        assert.equal(err.message, "Unable to get document count: #{status} - #{body}")
 
 
   'An instance of a non-default Database object':
