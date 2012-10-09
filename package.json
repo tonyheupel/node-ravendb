@@ -1,11 +1,11 @@
 {
   "name": "ravendb",
-  "version": "0.0.20",
-  "author": "Tony Heupel <tonyheupel@gmail.com>",
+  "version": "0.0.21",
+  "author": "Tony Heupel <tony@heupel.net>",
   "description": "A node library for accessing RavenDB",
   "contributors": [
-    {
-    }
+    "Tony Heupel <tony@heupel.net>",
+    "Derek Ekins <derek@spathi.com>"
   ],
   "main": "./lib/ravendb",
   "scripts": {
