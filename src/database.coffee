@@ -421,7 +421,6 @@ class Database
 
       if typeof bodyOrReadableStream is 'object'
         unless req.headers['content-type']? or req.headers['Content-Type']? or req.headers['Content-type']?
-          console.log("Setting default content type")
           req.headers['content-type'] = 'application/json; charset=utf-8'
 
         req.body = JSON.stringify(bodyOrReadableStream)
