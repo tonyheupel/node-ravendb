@@ -69,20 +69,24 @@ class Database
     return null
 
 
-  saveDocument: (collection, doc, cb) ->
+  saveDocument: (collection, doc, metadata, cb) ->
     # If not id provided, use POST to allow server-generated id
     # else, use PUT and use id in url
     op = @apiPostCall
     url = @getDocsUrl()
+
+    if typeof metadata is 'function'
+      cb = metadata
+      metadata = {}
 
     if doc.id?
       op = @apiPutCall
       url = @getDocUrl(doc.id)
       delete doc.id # Don't add this as it's own property to the document...
 
-    op.call @, url, doc, {'Raven-Entity-Name': collection}, (error, response) ->
-      # TODO: skip this if no collection string passed in?
 
+    metadata['Raven-Entity-Name'] = collection if collection?
+    op.call @, url, doc, metadata, (error, response) ->
       if !error and response.statusCode is 201 # 201 - Created
         cb(null, response.body) if cb?
       else
