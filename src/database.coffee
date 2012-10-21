@@ -85,7 +85,9 @@ class Database
       delete doc.id # Don't add this as it's own property to the document...
 
 
-    metadata['Raven-Entity-Name'] = collection if collection?
+    unless metadata['Raven-Entity-Name']?
+      metadata['Raven-Entity-Name'] = collection if collection?
+
     op.call @, url, doc, metadata, (error, response) ->
       if !error and response.statusCode is 201 # 201 - Created
         cb(null, response.body) if cb?
@@ -418,7 +420,10 @@ class Database
         return
 
       if typeof bodyOrReadableStream is 'object'
-        req.headers['content-type'] = 'application/json; charset=utf-8'
+        unless req.headers['content-type']? or req.headers['Content-Type']? or req.headers['Content-type']?
+          console.log("Setting default content type")
+          req.headers['content-type'] = 'application/json; charset=utf-8'
+
         req.body = JSON.stringify(bodyOrReadableStream)
       else
         req.body = bodyOrReadableStream
