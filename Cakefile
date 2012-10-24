@@ -1,7 +1,8 @@
 child_process = require 'child_process'
 exec = child_process.exec
 spawn = child_process.spawn
-
+path = require 'path'
+os = require 'os'
 
 task 'build', 'Build project from src/*.coffee to lib/*.js', ->
   exec 'coffee --compile --output lib/ src/', (err, stdout, stderr) ->
@@ -10,7 +11,8 @@ task 'build', 'Build project from src/*.coffee to lib/*.js', ->
     console.log stdout + stderr
 
 task 'watch', 'Watch src/*.coffee files and build them to lib/*.js when they change', ->
-  proc = spawn 'coffee', ['--compile', '--output', 'lib/', '--watch', 'src/']
+  executable = "coffee#{if os.type() is 'Windows_NT' then '.cmd' else ''}"
+  proc = spawn path.join('node_modules', '.bin', executable), ['--compile', '--output', 'lib/', '--watch', 'src/']
 
   proc.stdout.on 'data', (data) ->
     console.log data.toString()
