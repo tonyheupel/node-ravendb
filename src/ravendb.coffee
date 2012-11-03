@@ -10,6 +10,7 @@ ravendb = (datastoreUrl, databaseName='Default') ->
 # other modules can tweak them :-)
 ravendb.Datastore = Datastore
 ravendb.Database = require('./database')
+ravendb.Document = require('./document')
 
 
 module.exports = ravendb

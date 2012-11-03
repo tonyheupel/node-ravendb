@@ -19,7 +19,8 @@
     "ravendb"
   ],
   "dependencies" : {
-  "request": "2.1.x"
+  "request": "2.1.x",
+  "underscore": "1.4.x"
   },
   "noAnalyze": true,
   "devDependencies": {

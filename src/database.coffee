@@ -1,62 +1,58 @@
 # database.coffee
-request = require('request')
-
+Api = require('./api')
+Document = require('./document')
 
 class Database
   @DOCUMENTS_BY_ENTITY_NAME_INDEX: 'Raven/DocumentsByEntityName'
   @DYNAMIC_INDEX: 'dynamic'
 
   constructor: (@datastore, @name) ->
-    @authorization = null # Nothing by default
-    @proxy = null         # Nothing by default
+    @api = new Api(@datastore.url, @name)
 
   getUrl: ->
-    url = @datastore.url
-    url += "/databases/#{@name}" unless @name is 'Default'
-    url
+    @api.getUrl()
 
   getDocsUrl: ->
-    "#{@getUrl()}/docs"
+    @api.getDocsUrl()
 
   getDocUrl: (id) ->
-    "#{@getDocsUrl()}/#{id}"
+    @api.getDocUrl(id)
 
   getIndexesUrl: ->
-    "#{@getUrl()}/indexes"
+    @api.getIndexesUrl()
 
   getIndexUrl: (index) ->
-    "#{@getIndexesUrl()}/#{index}"
+    @api.getIndexUrl(index)
 
   getTermsUrl: (index, field) ->
-    "#{@getUrl()}/terms/#{index}?field=#{field}"
+    @api.getTermsUrl(index, field)
 
   getStaticUrl: ->
-    "#{@getUrl()}/static"
+    @api.getStaticUrl()
 
   getAttachmentUrl: (id) ->
-    "#{@getStaticUrl()}/#{id}"
+    @api.getAttachmentUrl(id)
 
   getQueriesUrl: ->
-    "#{@getUrl()}/queries"
+    @api.getQueryiesUrl()
 
   getBulkDocsUrl: ->
-    "#{@getUrl()}/bulk_docs"
+    @api.getBulkDocsUrl()
 
   getBulkDocsIndexUrl:  (index, query) ->
-    "#{@getBulkDocsUrl()}/#{index}?query=#{@luceneQueryArgs(query)}"
+    @api.getBulkDocsIndexUrl(index, query)
 
   getStatsUrl: ->
-    "#{@getUrl()}/stats"
+    @api.getStatsUrl()
 
   setAuthorization: (authValue) ->
-    @authorization = authValue
+    @api.setAuthorization(authValue)
 
   setBasicAuthorization: (username, password) ->
-    user_pwd = new Buffer("#{username}:#{password}").toString('base64')
-    @setAuthorization "Basic #{user_pwd}"
+    @api.setBasicAuthorization(username, password)
 
   setProxy: (proxyUrl) ->
-    @proxy = proxyUrl
+    @api.setProxy(proxyUrl)
 
 
   getCollections: (cb) ->
@@ -69,45 +65,51 @@ class Database
     return null
 
 
-  saveDocument: (collection, doc, metadata, cb) ->
+  saveDocument: (collection, doc, cb) ->
     # If not id provided, use POST to allow server-generated id
     # else, use PUT and use id in url
     op = @apiPostCall
     url = @getDocsUrl()
 
-    if typeof metadata is 'function'
-      cb = metadata
-      metadata = {}
+    if typeof collection is 'object' and collection isnt null
+      cb = doc
+      doc = collection
+      collection = null
 
     if doc.id?
       op = @apiPutCall
       url = @getDocUrl(doc.id)
+      doc = Document.fromObject(doc)
       delete doc.id # Don't add this as it's own property to the document...
 
+    unless doc.getMetadataValue('Raven-Entity-Name')?
+      doc.setMetadataValue('Raven-Entity-Name', collection) if collection?
 
-    unless metadata['Raven-Entity-Name']?
-      metadata['Raven-Entity-Name'] = collection if collection?
-
-    op.call @, url, doc, metadata, (error, response) ->
+    op.call @, url, doc, doc.getMetadata(), (error, response) ->
       if !error and response.statusCode is 201 # 201 - Created
-        cb(null, response.body) if cb?
+        doc.setMetadataValues(JSON.parse(response.body))
+        doc.id = doc.getMetadataValue('key')
+        cb(null, doc) if cb?
       else
         if cb?
           if error? then cb(error)
           else cb(new Error('Unable to create document: ' + response.statusCode + ' - ' + response.body))
 
-    return null
+    return
 
 
   getDocument: (id, cb) ->
     url = @getDocUrl(id)
     @apiGetCall url, (error, response) ->
       if !error and response.statusCode is 200
-        cb(null, JSON.parse(response.body))
+        doc = Document.fromObject(JSON.parse(response.body))
+        doc.setMetadataValues(response.headers)
+        doc.id = doc.getMetadataValue('key')
+        cb(null, doc)
       else
         cb(error)
 
-    return null
+    return
 
 
   getDocuments: (ids, cb) ->
@@ -121,7 +123,7 @@ class Database
           if error? then cb(error)
           else cb(new Error('Unable to find documents: ' + response.statusCode + ' - ' + response.body))
 
-    return null
+    return
 
   # PATCH - Update
 
@@ -136,7 +138,7 @@ class Database
           if error? then cb(error)
           else cb(new Error('Unable to delete document: ' + response.statusCode + ' - ' + response.body))
 
-    return null
+    return
 
 
   # Set-based updates
@@ -152,7 +154,7 @@ class Database
           if error? cb(error)
           else cb(new Error('Unable to delete documents: ' + response.statusCode + ' - ' + response.body))
 
-    return null
+    return
 
 
   # Search
@@ -173,7 +175,7 @@ class Database
 
       cb(error, matches)
 
-    return null
+    return
 
 
   getDocsInCollection: (collection, start, count, cb) ->
@@ -190,7 +192,7 @@ class Database
 
       cb(error, if results?.Results? then results.Results else null)
 
-    return null
+    return
 
 
   getDocumentCount: (collection, cb) ->
@@ -222,7 +224,7 @@ class Database
       stats = JSON.parse(results.body) unless error?
       cb(error, stats)
 
-    return null
+    return
 
 
   # Indexes
@@ -346,91 +348,19 @@ class Database
 
   # base API get calls
   apiGetCall: (url, headers, cb) ->
-    if typeof headers is 'function'
-      cb = headers
-      headers = {}
-
-    @apiCall 'get', url, null, headers, (error, response) ->
-      cb(error, response)
-
+    @api.get(url, headers, cb)
 
   apiPutCall: (url, body, headers, cb) ->
-    if typeof headers is 'function'
-      cb = headers
-      headers = {}
-
-    @apiCall 'put', url, body, headers, (error, response) ->
-      cb(error, response)
-      # Maybe check for 201 - CREATED here?
-
+    @api.put(url, body, headers, cb)
 
   apiPostCall: (url, body, headers, cb) ->
-    if typeof headers is 'function'
-      cb = headers
-      headers = {}
-
-    @apiCall 'post', url, body, headers, cb  # Maybe check for UPDATED here?
-
+    @api.post(url, body, headers, cb)
 
   apiPatchCall: (url, body, headers, cb) ->
-    if typeof headers is 'function'
-      cb = headers
-      headers = {}
-
-    @apiCall 'patch', url, body, headers, cb  # Maybe check for success here?
-
+    @api.patch(url, body, headers, cb)
 
   apiDeleteCall: (url, body, headers, cb) ->
-    if typeof body is 'function'
-      cb = body
-      body = null
-      headers = {}
-    else if typeof headers is 'function'
-      cb = headers
-      headers = {}
-
-    @apiCall 'delete', url, body, headers, cb  # Maybe check for DELETED here?
-
-
-  apiCall: (verb, url, bodyOrReadableStream, headers, cb) ->
-    verb = verb.toLowerCase()
-
-    switch verb
-      when 'get' then op = request.get
-      when 'put' then op = request.put    # create new when client can't predict id
-      when 'post' then op = request.post  # override definition of resource with id
-      when 'delete' then op = request.del # delete resource
-      when 'patch'
-        throw new Error('request module does not yet support patch verb') # update part of an existing resource
-      else
-        throw new Error('No operation matched the verb "' + verb +'"')
-
-    headers.Authorization = @authorization if @authorization?
-
-    req = { uri: url, headers: headers }
-    req['proxy'] = @proxy if @proxy?
-    # if passing in an object,
-    #   see if it's a ReadableStream; if so, pipe it,
-    #   else json so it sends application/json mime type
-    # else set the body
-    if bodyOrReadableStream?
-
-      if bodyOrReadableStream.readable?
-        bodyOrReadableStream.pipe(op.call(request, req, cb))
-        return
-
-      if typeof bodyOrReadableStream is 'object'
-        unless req.headers['content-type']? or req.headers['Content-Type']? or req.headers['Content-type']?
-          req.headers['content-type'] = 'application/json; charset=utf-8'
-
-        req.body = JSON.stringify(bodyOrReadableStream)
-      else
-        req.body = bodyOrReadableStream
-
-    op.call(request, req, cb)
-
-    return null
-
+    @api.delete(url, body, headers, cb)
 
 
 module.exports = Database
