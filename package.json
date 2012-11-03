@@ -1,6 +1,6 @@
 {
   "name": "ravendb",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "author": "Tony Heupel <tony@heupel.net>",
   "description": "A node library for accessing RavenDB",
   "contributors": [
