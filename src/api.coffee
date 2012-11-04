@@ -161,7 +161,7 @@ class Api
       cb = headers
       headers = {}
 
-    @makeReqeust 'get', url, null, headers, (error, response) ->
+    @makeRequest 'get', url, null, headers, (error, response) ->
       cb(error, response)
 
 
@@ -170,7 +170,7 @@ class Api
       cb = headers
       headers = {}
 
-    @makeReqeust 'put', url, body, headers, (error, response) ->
+    @makeRequest 'put', url, body, headers, (error, response) ->
       cb(error, response)
       # Maybe check for 201 - CREATED here?
 
@@ -205,7 +205,7 @@ class Api
 
 
 
-  makeReqeust: (verb, url, bodyOrReadableStream, headers, cb) ->
+  makeRequest: (verb, url, bodyOrReadableStream, headers, cb) ->
     verb = verb.toLowerCase()
 
     switch verb
@@ -243,7 +243,6 @@ class Api
 
     op.call request, req, (error, response) =>
       if error?
-        console.log "I think there's errors: #{JSON.stringify(error)}"
         cb(error, response)
         return
 
