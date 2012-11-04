@@ -6,8 +6,8 @@ class Database
   @DOCUMENTS_BY_ENTITY_NAME_INDEX: 'Raven/DocumentsByEntityName'
   @DYNAMIC_INDEX: 'dynamic'
 
-  constructor: (@datastore, @name) ->
-    @api = new Api(@datastore.url, @name)
+  constructor: (@datastore, @name, apiProvider=Api) ->
+    @api = new apiProvider(@datastore.url, @name)
 
   getUrl: ->
     @api.getUrl()
@@ -56,7 +56,7 @@ class Database
 
 
   getCollections: (cb) ->
-    @apiGetCall @getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'),  (error, response) ->
+    @apiGet @getTermsUrl(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, 'Tag'),  (error, response) ->
       if !error and response.statusCode is 200
         cb(null, JSON.parse(response.body)) if cb?
       else if cb?
@@ -68,7 +68,7 @@ class Database
   saveDocument: (collection, doc, cb) ->
     # If not id provided, use POST to allow server-generated id
     # else, use PUT and use id in url
-    op = @apiPostCall
+    op = @apiPost
     url = @getDocsUrl()
 
     if typeof collection is 'object' and collection isnt null
@@ -77,7 +77,7 @@ class Database
       collection = null
 
     if doc.id?
-      op = @apiPutCall
+      op = @apiPut
       url = @getDocUrl(doc.id)
       doc = Document.fromObject(doc)
       delete doc.id # Don't add this as it's own property to the document...
@@ -100,7 +100,7 @@ class Database
 
   getDocument: (id, cb) ->
     url = @getDocUrl(id)
-    @apiGetCall url, (error, response) ->
+    @apiGet url, (error, response) ->
       if !error and response.statusCode is 200
         doc = Document.fromObject(JSON.parse(response.body))
         doc.setMetadataValues(response.headers)
@@ -115,7 +115,7 @@ class Database
   getDocuments: (ids, cb) ->
     url = @getQueriesUrl()
 
-    @apiPostCall url, ids, (error, response) ->
+    @apiPost url, ids, (error, response) ->
       if !error and response.statusCode is 200
         cb(null, response.body) if cb?
       else
@@ -130,7 +130,7 @@ class Database
   deleteDocument: (id, cb) ->
     url = @getDocUrl(id)
     # TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
-    @apiDeleteCall url, (error, response) ->
+    @apiDelete url, (error, response) ->
       if !error and response.statusCode is 204  # 204 - No content
         cb(null, response.body) if cb?
       else
@@ -146,7 +146,7 @@ class Database
   deleteDocuments: (index, query, cb) ->
     url = @getBulkDocsIndexUrl(index, query)
 
-    @apiDeleteCall url, (error, response) ->
+    @apiDelete url, (error, response) ->
       if !error and response.statusCode is 200
         cb(null, if response?.body?.length? > 0 then JSON.parse(response.body) else null) if cb?
       else
@@ -220,7 +220,7 @@ class Database
 
 
   getStats: (cb) ->
-    @apiGetCall @getStatsUrl(), (error, results) ->
+    @apiGet @getStatsUrl(), (error, results) ->
       stats = JSON.parse(results.body) unless error?
       cb(error, stats)
 
@@ -254,7 +254,7 @@ class Database
     url = "#{@getIndexUrl(index)}?start=#{start}&pageSize=#{count}&aggregation=None"
     url += "&query=#{@luceneQueryArgs(query)}" if query?
 
-    @apiGetCall(url, cb)
+    @apiGet(url, cb)
 
 
   createIndex: (name, map, reduce, cb) ->
@@ -268,7 +268,7 @@ class Database
 
     if reduce? then index['Reduce'] = reduce
 
-    @apiPutCall url, index, (error, response) ->
+    @apiPut url, index, (error, response) ->
       if !error and response.statusCode is 201
         cb(null, if response?.body?.length? > 0 then JSON.parse(response.body) else null) if cb?
       else
@@ -280,7 +280,7 @@ class Database
   deleteIndex: (index, cb) ->
     url = @getIndexUrl(index)
 
-    @apiDeleteCall url, (error, response) ->
+    @apiDelete url, (error, response) ->
       if !error and response.statusCode is 204  # 204 - No content
         cb(null, if response?.body?.length? > 0 then JSON.parse(response.body) else null) if cb?
       else
@@ -294,7 +294,7 @@ class Database
   saveAttachment: (docId, content, headers, cb) ->
     url = @getAttachmentUrl(docId)
 
-    @apiPutCall url, content, headers, (error, response) ->
+    @apiPut url, content, headers, (error, response) ->
       if !error and response.statusCode is 201
         cb(null, if response?.body?.length? > 0 then JSON.parse(response.body) else null) if cb?
       else
@@ -305,7 +305,7 @@ class Database
 
   getAttachment: (id, cb) ->
     url = @getAttachmentUrl(id)
-    @apiGetCall url, (error, response) ->
+    @apiGet url, (error, response) ->
       if !error and response.statusCode is 200
         cb(null, response)
       else
@@ -315,7 +315,7 @@ class Database
   deleteAttachment: (id, cb) ->
     url = @getAttachmentUrl(id)
     # TODO: Still need to determine the cutOff and allowStale options - http://ravendb.net/docs/http-api/http-api-multi
-    @apiDeleteCall url, (error, response) ->
+    @apiDelete url, (error, response) ->
       if !error and response.statusCode is 204  # 204 - No content
         cb(null, response.body) if cb?
        else
@@ -346,20 +346,20 @@ class Database
 
 
 
-  # base API get calls
-  apiGetCall: (url, headers, cb) ->
+  # base API calls
+  apiGet: (url, headers, cb) ->
     @api.get(url, headers, cb)
 
-  apiPutCall: (url, body, headers, cb) ->
+  apiPut: (url, body, headers, cb) ->
     @api.put(url, body, headers, cb)
 
-  apiPostCall: (url, body, headers, cb) ->
+  apiPost: (url, body, headers, cb) ->
     @api.post(url, body, headers, cb)
 
-  apiPatchCall: (url, body, headers, cb) ->
+  apiPatch: (url, body, headers, cb) ->
     @api.patch(url, body, headers, cb)
 
-  apiDeleteCall: (url, body, headers, cb) ->
+  apiDelete: (url, body, headers, cb) ->
     @api.delete(url, body, headers, cb)
 
 
