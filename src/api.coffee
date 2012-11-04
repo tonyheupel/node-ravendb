@@ -155,6 +155,15 @@ class Api
 
     return
 
+  # Authentication Provider
+  useRavenHq: (apiKey, database, cb) ->
+    request.get { uri: database.getDocsUrl() }, (err, denied) -> # should be https://1.ravenhq.com/docs
+      # denied.headers['oauth-source'] = https://oauth.ravenhq.com/ApiKeys/OAuth/AccessToken
+      request.get { uri: denied.headers['oauth-source'], headers: { "Api-Key": apiKey } }, (err, oauth) ->
+        database.setAuthorization("Bearer " + oauth.body)
+        cb(err, oauth) if cb?
+
+
   # base API calls
   get: (url, headers, cb) ->
     if typeof headers is 'function'

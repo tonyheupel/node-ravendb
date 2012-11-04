@@ -337,13 +337,7 @@ class Database
 
   # Authorization providers
   useRavenHq: (apiKey, cb) ->
-    database = @  # Look at using => in the request.get callbacks
-    request.get { uri: database.getDocsUrl() }, (err, denied) -> # should be https://1.ravenhq.com/docs
-      # denied.headers['oauth-source'] = https://oauth.ravenhq.com/ApiKeys/OAuth/AccessToken
-      request.get { uri: denied.headers['oauth-source'], headers: { "Api-Key": apiKey } }, (err, oauth) ->
-        database.setAuthorization("Bearer " + oauth.body)
-        cb(err, oauth) if cb?
-
+    @api.useRavenHq(apiKey, @, cb)
 
 
   # base API calls
