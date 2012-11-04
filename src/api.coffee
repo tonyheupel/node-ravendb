@@ -2,6 +2,7 @@ request = require 'request'
 _ = require 'underscore'
 
 class Api
+  # From https://github.com/ravendb/ravendb/blob/master/Raven.Abstractions/Extensions/MetadataExtensions.cs
   @IGNORE_HEADERS = [
     # Raven internal headers
     "Raven-Server-Build",
