@@ -337,7 +337,9 @@ class Database
 
   # Authorization providers
   useRavenHq: (apiKey, cb) ->
-    @api.useRavenHq(apiKey, @, cb)
+    @api.useRavenHq apiKey, (error, authorizationHeaderValue) ->
+      @setAuthorization(authorizationHeaderValue)
+      cb(error, authorizationHeaderValue) if cb?
 
 
   # base API calls
