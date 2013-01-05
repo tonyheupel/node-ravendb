@@ -8,7 +8,7 @@ helpers =
       returnObject = statusCode
       statusCode = 200
 
-    database.apiCall = (verb, url, body, headers, cb) ->
+    database.api.makeRequest = (verb, url, body, headers, cb) ->
       if typeof body == 'function'
         cb = body
         body = null
