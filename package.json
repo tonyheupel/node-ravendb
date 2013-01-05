@@ -20,7 +20,7 @@
   ],
   "dependencies" : {
   "request": "2.1.x",
-  "underscore": "1.4.x"
+  "underscore": "1.4.x",
   "testino": ">=0.0.2"
   },
   "noAnalyze": true,
