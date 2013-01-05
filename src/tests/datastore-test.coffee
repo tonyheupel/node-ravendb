@@ -4,7 +4,7 @@ testino = require('testino')
 assert = require('assert')
 helpers = require('./helpers')
 
-module.exports = datastoreOperations = testino.createFixture('datastoreOperations')
+module.exports = datastoreOperations = testino.createFixture('Datastore Operations')
 
 # Helper method
 createDefaultDatabase = (datastore) ->

@@ -5,7 +5,7 @@ Document = require('../document')
 basicObject = { id: "users/tony", name: "Tony Heupel" }
 doc = Document.fromObject(basicObject)
 
-module.exports = documentOperations = testino.createFixture('Document operations')
+module.exports = documentOperations = testino.createFixture('Document Operations')
 documentOperations.tests =
   "Document.fromObject result should be the same object with some new properties": () ->
       assert.equal(doc.id, basicObject.id, "Document should have the same id property")
