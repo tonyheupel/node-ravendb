@@ -21,11 +21,11 @@
   "dependencies" : {
   "request": "2.1.x",
   "underscore": "1.4.x"
+  "testino": ">=0.0.2"
   },
   "noAnalyze": true,
   "devDependencies": {
-    "coffee-script": ">=1.3.3",
-    "testino": ">=0.0.2"
+    "coffee-script": ">=1.3.3"
   },
   "bundleDependencies": [
   ],
