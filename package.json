@@ -1,6 +1,6 @@
 {
   "name": "ravendb",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "author": "Tony Heupel <tony@heupel.net>",
   "description": "A node library for accessing RavenDB",
   "contributors": [
@@ -9,7 +9,7 @@
   ],
   "main": "./lib/ravendb",
   "scripts": {
-    "test": "cp src/tests/*.jpeg lib/tests/; node -e 'var testino = require(\"testino\"); console.log(testino.runFiles(\"lib/tests/*-test.js\"));'"
+    "test": "cp src/tests/*.jpeg lib/tests/; testino --files=lib/tests/*-test.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "dependencies" : {
   "request": "2.1.x",
   "underscore": "1.4.x",
-  "testino": ">=0.0.2"
+  "testino": ">=0.0.3"
   },
   "noAnalyze": true,
   "devDependencies": {
