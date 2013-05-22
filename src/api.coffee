@@ -155,6 +155,14 @@ class Api
 
     return
 
+  luceneQueryArgs: (query) ->
+    return null unless query?
+
+    pairs = []
+    pairs.push "#{key}:#{value}" for key, value of query
+    pairs.join '+'
+
+
   # Authentication Provider
   useRavenHq: (apiKey, cb) ->
     request.get { uri: @getDocsUrl() }, (err, denied) -> # should be https://1.ravenhq.com/docs

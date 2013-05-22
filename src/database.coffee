@@ -327,12 +327,7 @@ class Database
 
   # helper methods
   luceneQueryArgs: (query) ->
-    return null unless query?
-
-    pairs = []
-    pairs.push "#{key}:#{value}" for key, value of query
-    pairs.join '+'
-
+    @api.luceneQueryArgs(query)
 
 
   # Authorization providers
