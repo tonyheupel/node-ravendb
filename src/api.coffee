@@ -154,6 +154,14 @@ class Api
     delete response.headers[key] if key.substring(0, 4) is "temp" for key, value of response.headers
 
     return
+    
+  luceneFetchArgs: (fetch) ->
+    return null unless fetch?
+    
+    if Array.isArray fetch
+        return fetch.join ','
+    
+    fetch
 
   luceneQueryArgs: (query) ->
     return null unless query?
