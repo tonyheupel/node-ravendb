@@ -239,20 +239,26 @@ class Database
     @queryByIndex(Database.DOCUMENTS_BY_ENTITY_NAME_INDEX, search, start, count, cb)
 
 
-  queryByIndex: (index, query, start=0, count=25, cb) ->
+  queryByIndex: (index, query, start=0, count=25, fetch, cb) ->
     if typeof start is 'function'
       cb = start
       start = null
       count = null
+      fetch = null
     else if typeof count is 'function'
       cb = count
       count = null
+      fetch = null
+    else if typeof fetch is 'function'
+      cb = fetch
+      fetch = null
 
     # if start and count are set to 0, you'll just get the TotalResults property
     # and no results
 
     url = "#{@getIndexUrl(index)}?start=#{start}&pageSize=#{count}&aggregation=None"
     url += "&query=#{@luceneQueryArgs(query)}" if query?
+    url += "&fetch=#{@luceneFetchArgs(fetch)}" if fetch?
 
     @apiGet(url, cb)
 
@@ -328,6 +334,9 @@ class Database
   # helper methods
   luceneQueryArgs: (query) ->
     @api.luceneQueryArgs(query)
+    
+  luceneFetchArgs: (fetch) ->
+    @api.luceneFetchArgs(fetch)
 
 
   # Authorization providers
