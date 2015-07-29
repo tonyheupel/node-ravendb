@@ -34,7 +34,7 @@ class Database
     @api.getAttachmentUrl(id)
 
   getQueriesUrl: ->
-    @api.getQueryiesUrl()
+    @api.getQueriesUrl()
 
   getBulkDocsUrl: ->
     @api.getBulkDocsUrl()
